@@ -34,11 +34,11 @@ import model.PieceType;
 import model.Tile;
 
 public class MainScreenController implements Runnable {
-	
+
 	private Stage primaryStage;
 
 	ControllerUser controllerUser;
-	
+
 	private BufferedReader in;
 	private PrintWriter out;
 	private IntegerProperty port = new SimpleIntegerProperty(22222);
@@ -59,11 +59,10 @@ public class MainScreenController implements Runnable {
 	private String wonString = "Wygra³eœ";
 	private String enemyWonString = "Przeciwnik wygra³";
 	private String tieString = "Gra zakoñczona remisem";
-	
-	private String yourNick="puste";
-	private String opponentNick="pusty";
-	private char playerType;
 
+	private String yourNick = "puste";
+	private String opponentNick = "pusty";
+	private char playerType;
 
 	private int errors = 0;
 	private int queenMove = 0;
@@ -100,26 +99,29 @@ public class MainScreenController implements Runnable {
 	private Label whitePlayerNick;
 	@FXML
 	private Label LabelGamemssgs;
-	
+
 	public void setStage(ControllerUser controllerUser, Stage primaryStage) {
 		this.controllerUser = controllerUser;
 		this.primaryStage = primaryStage;
-		yourNick=controllerUser.getLocaluser();
+		yourNick = controllerUser.getLocaluser();
+		setNickLabel();
 	};
 
 	private void setNickLabel() {
-		if(playerType=='R') {
-			redPlayerNick.setText(yourNick);		
-			}
-		if(playerType=='W') {
-			whitePlayerNick.setText(yourNick);
-	}
-
+		if (playerType == 'R') {
+					redPlayerNick.setText("Nick: "+ yourNick);
+					redPlayerNick.setVisible(true);
 		}
+		if (playerType == 'W') {
+					whitePlayerNick.setText("Nick: "+yourNick);
+					whitePlayerNick.setVisible(true);
+				}
+	}
 
 	public enum Turn {
 		MyTurn, OpponentTurn, None
 	}
+
 	private void displayTurn(Turn turn) {
 		switch (turn) {
 		case MyTurn:
@@ -173,11 +175,12 @@ public class MainScreenController implements Runnable {
 		piece.setOnMouseReleased(e -> {
 			int newX = toBoard(piece.getLayoutX());
 			int newY = toBoard(piece.getLayoutY());
-			if(accepted&&yourTurn)
-			out.println("MOVE " + x + y + newX + newY);
-			else piece.abortMove();
+			if (accepted && yourTurn)
+				out.println("MOVE " + x + y + newX + newY);
+			else
+				piece.abortMove();
 		});
-	
+
 		return piece;
 	}
 
@@ -221,97 +224,121 @@ public class MainScreenController implements Runnable {
 		String response;
 		try {
 			response = in.readLine();
-			//hostField.setText(response);
-			//System.out.println(response);
+			// hostField.setText(response);
+			// System.out.println(response);
 			if (response.startsWith("WELCOME")) {
 				char mark = response.charAt(8);
 				System.out.print(mark);
-				playerType=mark;				
+				playerType = mark;
 			}
-			else if(response.startsWith("MESSAGE Waiting for opponent to connect")) {
+
+			else if (response.startsWith("MESSAGE Waiting for opponent to connect")) {
 				javafx.application.Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
-						LabelGamemssgs.setText(waitingString);
+						LabelGamemssgs.setText("Komunikat:" + waitingString);
 					}
 				});
-			accepted=true;
-			LabelGamemssgs.setText(waitingString);
-		}
-			if (response.startsWith("OPPONNENTNICK")) {
-				opponentNick =response.replace("OPPONNENTNICK","");
-				javafx.application.Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						if(playerType=='W') {
-							redPlayerNick.setText(opponentNick);
+				accepted = true;
+
+			} else if (response.startsWith("OPPONNENTNICK")) {
+				opponentNick = response.replace("OPPONNENTNICK", "");
+				if (playerType == 'W') {
+					javafx.application.Platform.runLater(new Runnable() {
+						@Override
+						public void run() {
+							redPlayerNick.setText("Nick: "+opponentNick);
+							redPlayerNick.setVisible(true);
+
 						}
-						if(playerType=='R') {
-							whitePlayerNick.setText(opponentNick);
-						}
-					}
-				});
-				System.out.println("|wys³any przez serwer nick przeciwnika," + " aktualny u¿y:" + playerType + "otrzymany nick:" + opponentNick + ",");
+					});
 				}
-			
-			else if(response.startsWith("MESSAGE All players connected")) {
+				if (playerType == 'R') {
+					javafx.application.Platform.runLater(new Runnable() {
+						@Override
+						public void run() {
+							whitePlayerNick.setText("Nick: "+opponentNick);
+							whitePlayerNick.setVisible(true);
+
+						}
+					});
+				}
+
+			}
+
+			else if (response.startsWith("MESSAGE All players connected")) {
+				setNickLabel();
 				javafx.application.Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
-						setNickLabel();
-						LabelGamemssgs.setText("Zaczynamy grê");
+						LabelGamemssgs.setText("Komunikat: Gramy !");
 					}
 				});
-				accepted=true;
+
+				accepted = true;
 				out.println("NICK" + yourNick);
-			}
-			else if(response.startsWith("MSG Your move")) {
-				yourTurn=true;
+
+			} else if (response.startsWith("MSG Your move")) {
+				yourTurn = true;
 				displayTurn(Turn.MyTurn);
-			}
-			else if(response.startsWith("MSG Opponen move")) {
+
+			} else if (response.startsWith("MSG Opponen move")) {
 				displayTurn(Turn.OpponentTurn);
-				yourTurn=false;
-			}
-			else if(response.startsWith("MOREKILL")) {
+				yourTurn = false;
+
+			} else if (response.startsWith("MOREKILL")) {
 				javafx.application.Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
 						repaint(response.substring(8));
 					}
 				});
-			}
-			else if (response.startsWith("VALID_MOVE")) {
+
+			} else if (response.startsWith("VALID_MOVE")) {
 				javafx.application.Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
-						repaint(response.substring(10));
-					}
+						repaint(response.substring(10));					}
 				});
 				displayTurn(Turn.OpponentTurn);
-				yourTurn=false;
+				yourTurn = false;
 
 			} else if (response.startsWith("OPPONENT_MOVED")) {
 				javafx.application.Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
 						repaint(response.substring(15));
-						LabelGamemssgs.setText("Niewa¿ny ruch");
 					}
 				});
-				yourTurn=true;
+				yourTurn = true;
 				displayTurn(Turn.MyTurn);
 			}
 			// } else if (response.startsWith("VICTORY")) {
-			// LabelGamemssgs.setText(wonString);
+			//javafx.application.Platform.runLater(new Runnable() {
+			//	@Override
+			//	public void run() {
+			//		LabelGamemssgs.setText("Komunikat:" + wonString);
+			//	}
+			//});
 			// break;
 			// } else if (response.startsWith("DEFEAT")) {
-			// LabelGamemssgs.setText(enemyWonString);
+			//javafx.application.Platform.runLater(new Runnable() {
+			//	@Override
+			//	public void run() {
+			//		LabelGamemssgs.setText("Komunikat:" + enemyWonString);
+			//	}
+			//});
 			// break;
 			// } else if (response.startsWith("TIE")) {
-			// messageLabel.setText(tieString);
+			//javafx.application.Platform.runLater(new Runnable() {
+			//	@Override
+			//	public void run() {
+			//		LabelGamemssgs.setText("Komunikat:" + tieString);
+			//	}
+			//});
+
 			// break;
-			// 
+			//}
 			else if (response.startsWith("INVALID_MOVE")) {
 				javafx.application.Platform.runLater(new Runnable() {
 					@Override
@@ -321,7 +348,9 @@ public class MainScreenController implements Runnable {
 				});
 			}
 			// }
-		} catch (Exception e) {
+		}
+
+		catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -337,7 +366,6 @@ public class MainScreenController implements Runnable {
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out = new PrintWriter(socket.getOutputStream(), true);
 			thread = new Thread(this, "MainScreenController");
-			// thread = new Thread();
 			thread.start();
 		} catch (IOException e) {
 		}
@@ -346,9 +374,10 @@ public class MainScreenController implements Runnable {
 	@FXML
 	private void initialize() throws Exception {
 		createContent();
-		connect();
 		gamePool.getChildren().addAll(tileGroup, pieceGroup, label);
+		connect();
 		displayTurn(Turn.None);
+
 	}
 
 	@FXML
@@ -387,14 +416,14 @@ public class MainScreenController implements Runnable {
 	@Override
 	public void run() {
 		while (true) {
-				try {
-					play();
-					Toolkit.getDefaultToolkit().sync();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
+			try {
+				play();
+				Toolkit.getDefaultToolkit().sync();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
 		}
 	}
 
