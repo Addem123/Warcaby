@@ -1,0 +1,18 @@
+
+#borderPane{
+   -fx-background-color:white ;
+   }
+.label{
+	-fx-font: bold 10.0pt "Verdana";
+	-fx-underline:true;
+	/*-fx-text-fill:ffd700;*/
+}
+#cLabel{
+	-fx-font: bold 25.0pt "Verdana";
+	-fx-underline:true;
+	-fx-text-fill:ffd700;
+	-fx-alignment:center;
+	-fx-min-width: 530px;
+	-fx-translate-x: 20;
+	-fx-translate-y: 280;
+}
