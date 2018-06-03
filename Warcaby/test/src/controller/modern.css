@@ -1,0 +1,59 @@
+
+#borderPane{
+   -fx-background-image:url("/img/background.jpg");
+   }
+.label{
+	-fx-font: bold 10.0pt "Verdana";
+	-fx-underline:true;
+	/*-fx-text-fill:ffd700;*/
+}
+#cLabel{
+	-fx-font: bold 25.0pt "Verdana";
+	-fx-underline:true;
+	-fx-text-fill:ffd700;
+	-fx-alignment:center;
+	-fx-min-width: 530px;
+	-fx-translate-x: 20;
+	-fx-translate-y: 280;
+}
+.context-menu {
+-fx-background-color: #C8CFD7;
+-fx-border-color: #BBC2CC;
+-fx-text-fill: white;
+}
+
+.menu-item .label {
+-fx-fill:red;
+-fx-font-family:tahoma;
+-fx-font-size: 12px;
+-fx-stroke:#C8CFD7;
+-fx-strok-width:.25;
+}
+
+.menu-item:focused .label {
+-fx-text-fill: white;
+}
+.menu-item{
+-fx-border-color: #DDDEE2 transparent #B9C0C8 transparent;
+-fx-border-width:0.50px;
+
+}
+.menu-item:focused {
+-fx-background: -fx-accent;
+-fx-background-color: #7092BE;
+-fx-text-fill: -fx-selection-bar-text;
+}
+.button {
+	-fx-font: bold 10.0pt 'san-serif';
+    -fx-border-radius: 10.0;
+    -fx-background-radius: 10;
+    -fx-font: bold  10.0pt "Verdana";
+    -fx-min-width: 80;
+    -fx-background-color:#e0e0e0;
+	}
+.button:hover{
+	   /*-fx-background-color: linear-gradient(#2A5058, #61a2b1);*/
+ -fx-background-color:f36742;
+ -fx-cursor: hand;
+}
+
