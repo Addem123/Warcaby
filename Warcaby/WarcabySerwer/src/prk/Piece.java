@@ -23,5 +23,8 @@ public class Piece{
 	public PieceType getType() {
 		return type;
 	}
+	public void setQueen(boolean isQueen) {
+		this.isQueen = isQueen;
+	}
 }
 	

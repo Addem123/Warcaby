@@ -239,7 +239,7 @@ public class MainScreenController implements Runnable {
 						LabelGamemssgs.setText("Komunikat:" + waitingString);
 					}
 				});
-				accepted = true;
+			//	accepted = true;
 
 			} else if (response.startsWith("OPPONNENTNICK")) {
 				opponentNick = response.replace("OPPONNENTNICK", "");

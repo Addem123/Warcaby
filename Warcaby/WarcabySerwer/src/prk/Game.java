@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+import prk.Game.Player;
+
 class Game {
 
 	public Game() {
@@ -27,6 +29,9 @@ class Game {
 
 	Player currentPlayer;
 	private Piece[][] board = new Piece[8][8];
+	boolean won, enemyWon, tie;
+	private int queenMove = 0;
+	private int pieceCount = 0;
 
 	/**
 	 * Called by the player threads when a player tries to make a move. This method
@@ -36,6 +41,78 @@ class Game {
 	 * square is set and the next player becomes current) and the other player is
 	 * notified of the move so it can update its client.
 	 */
+	public int numberOfPiece() {
+		int number = 0;
+		for (int y = 0; y < 8; y++) {
+			for (int x = 0; x < 8; x++) {
+				if (board[x][y] != null)
+					number++;
+			}
+		}
+		return number;
+	}
+
+	private void checkWon() {
+		int yourMove = 0;
+		int oppMove = 0;
+		int yourPiece = 0;
+		int oppPiece = 0;
+		if (checkNumberOfStrikes(PieceType.WHITE) == 0 && checkNumberOfStrikes(PieceType.RED) == 0) {
+			for (int y = 0; y < 8; y++) {
+				for (int x = 0; x < 8; x++) {
+					if (board[x][y] != null && board[x][y].getType() == currentPlayer.type) {
+						yourPiece++;
+						int moveDir = board[x][y].getType().getMoveDir();
+						if (!board[x][y].isQueen()) {
+							if (x > 0 && !(board[x - 1][y + 1 * moveDir] != null))
+								yourMove++;
+							if (x < 7 && !(board[x + 1][y + 1 * moveDir] != null))
+								yourMove++;
+						} else {
+							if (x > 0 && y < 7 && !(board[x - 1][y + 1] != null))
+								yourMove++;
+							if (x < 7 && y < 7 && !(board[x + 1][y + 1] != null))
+								yourMove++;
+							if (x > 0 && y > 0 && !(board[x - 1][y - 1] != null))
+								yourMove++;
+							if (x < 7 && y > 0 && !(board[x + 1][y - 1] != null))
+								yourMove++;
+						}
+					}
+					if (board[x][y] != null && board[x][y].getType() != currentPlayer.type) {
+						oppPiece++;
+						int moveDir = board[x][y].getType().getMoveDir();
+						if (!board[x][y].isQueen()) {
+							if (x > 0 && !(board[x - 1][y + 1 * moveDir] != null))
+								oppMove++;
+							if (x < 7 && !(board[x + 1][y + 1 * moveDir] != null))
+								oppMove++;
+						} else {
+							if (x > 0 && y < 7 && !(board[x - 1][y + 1] != null))
+								oppMove++;
+							if (x < 7 && y < 7 && !(board[x + 1][y + 1] != null))
+								oppMove++;
+							if (x > 0 && y > 0 && !(board[x - 1][y - 1] != null))
+								oppMove++;
+							if (x < 7 && y > 0 && !(board[x + 1][y - 1] != null))
+								oppMove++;
+						}
+					}
+				}
+			}
+			if (((yourPiece > 0 && oppPiece == 0) || (yourMove > 0 && oppMove == 0))) {
+				won = true;
+
+			}
+			if ((yourPiece == 0 && oppPiece > 0) || (yourMove == 0 && oppMove > 0)) {
+				enemyWon = true;
+			}
+			if (queenMove >= 7 && pieceCount == (yourPiece + oppPiece)) {
+				tie = true;
+			}
+		}
+	}
+
 	private Piece checkQueenMove(int x, int y, int newX, int newY) {
 		int pieceToKill = 0;
 		int pieceCount = 0;
@@ -131,6 +208,13 @@ class Game {
 		// else gameStatus="6";
 		// return gameStatus;
 
+	}
+
+	public void changeType(Piece piece) {
+		if ((piece.getOldY() == 7 && piece.getType() == PieceType.RED && !piece.isQueen())
+				|| (piece.getOldY() == 0 && piece.getType() == PieceType.WHITE && !piece.isQueen())) {
+			piece.setQueen(true);
+		}
 	}
 
 	private boolean pieceStrike(Piece piece) {
@@ -300,10 +384,17 @@ class Game {
 							Piece piece = board[oldX][oldY];
 							board[oldX][oldY] = null;
 							board[newX][newY] = new Piece(piece.getType(), newX, newY, piece.isQueen());
+							Piece newPiece = new Piece(piece.getType(), newX, newY, piece.isQueen());
+							changeType(newPiece);
+							if (piece.isQueen())
+								queenMove++;
+							else
+								queenMove = 0;
+							if (queenMove == 1)
+								pieceCount = numberOfPiece();
 							output.println("VALID_MOVE" + gameStatus());
 							currentPlayer = currentPlayer.opponent;
 							currentPlayer.otherPlayerMoved();
-							//
 						} else if (tryMove(oldX, oldY, newX, newY).getType() == MoveType.KILL) {
 							MoveResult result = tryMove(oldX, oldY, newX, newY);
 							Piece piece = board[oldX][oldY];
@@ -312,7 +403,8 @@ class Game {
 							board[oldX][oldY] = null;
 							Piece otherPiece = result.getPiece();
 							board[otherPiece.getOldX()][otherPiece.getOldY()] = null;
-							// System.out.println(pieceStrike(newPiece));
+							changeType(newPiece);
+							queenMove=0;
 							if (!pieceStrike(newPiece)) {
 								output.println("VALID_MOVE" + gameStatus());
 								currentPlayer = currentPlayer.opponent;
