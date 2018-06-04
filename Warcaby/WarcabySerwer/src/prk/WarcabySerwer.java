@@ -10,9 +10,7 @@ public class WarcabySerwer {
 	            while (true) {
 	                Game game = new Game();
 	                Game.Player playerW = game.new Player(listener.accept(), 'W',PieceType.WHITE);
-	    	        System.out.println("first player");
 	                Game.Player playerR = game.new Player(listener.accept(), 'R',PieceType.RED);
-	    	        System.out.println("second player");
 	                playerW.setOpponent(playerR);
 	                playerR.setOpponent(playerW);
 	                game.currentPlayer = playerW;

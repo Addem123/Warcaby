@@ -26,6 +26,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.stage.Stage;
 import javafx.util.converter.NumberStringConverter;
@@ -227,9 +228,9 @@ public class MainScreenController implements Runnable {
 			// hostField.setText(response);
 			// System.out.println(response);
 			if (response.startsWith("WELCOME")) {
-				char mark = response.charAt(8);
-				System.out.print(mark);
-				playerType = mark;
+				char playerType = response.charAt(8);
+				//System.out.print(mark);
+				//playerType = mark;
 			}
 
 			else if (response.startsWith("MESSAGE Waiting for opponent to connect")) {
@@ -280,9 +281,13 @@ public class MainScreenController implements Runnable {
 
 			} else if (response.startsWith("MSG Your move")) {
 				yourTurn = true;
+				myElipse.setFill(Color.WHITE);
+				oppElipse.setFill(Color.RED);
 				displayTurn(Turn.MyTurn);
 
 			} else if (response.startsWith("MSG Opponen move")) {
+				myElipse.setFill(Color.RED);
+				oppElipse.setFill(Color.WHITE);
 				displayTurn(Turn.OpponentTurn);
 				yourTurn = false;
 
@@ -377,6 +382,14 @@ public class MainScreenController implements Runnable {
 		gamePool.getChildren().addAll(tileGroup, pieceGroup, label);
 		connect();
 		displayTurn(Turn.None);
+//		if(playerType=='W') {
+//			myElipse.setFill(Color.WHITE);
+//			oppElipse.setFill(Color.RED);
+//		}
+//		else {
+//			myElipse.setFill(Color.RED);
+//			oppElipse.setFill(Color.WHITE);
+//		}
 
 	}
 
