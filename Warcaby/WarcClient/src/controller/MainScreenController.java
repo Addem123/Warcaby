@@ -241,7 +241,6 @@ public class MainScreenController implements Runnable {
 					}
 				});
 			//	accepted = true;
-
 			} else if (response.startsWith("OPPONNENTNICK")) {
 				opponentNick = response.replace("OPPONNENTNICK", "");
 				if (playerType == 'W') {
@@ -250,7 +249,6 @@ public class MainScreenController implements Runnable {
 						public void run() {
 							redPlayerNick.setText("Nick: "+opponentNick);
 							redPlayerNick.setVisible(true);
-
 						}
 					});
 				}
@@ -281,13 +279,13 @@ public class MainScreenController implements Runnable {
 
 			} else if (response.startsWith("MSG Your move")) {
 				yourTurn = true;
-				myElipse.setFill(Color.WHITE);
-				oppElipse.setFill(Color.RED);
+				myElipse.setFill(Color.valueOf("#fff9f4"));
+				oppElipse.setFill(Color.valueOf("#c40003"));
 				displayTurn(Turn.MyTurn);
 
 			} else if (response.startsWith("MSG Opponen move")) {
-				myElipse.setFill(Color.RED);
-				oppElipse.setFill(Color.WHITE);
+				myElipse.setFill(Color.valueOf("#c40003"));
+				oppElipse.setFill(Color.valueOf("#fff9f4"));
 				displayTurn(Turn.OpponentTurn);
 				yourTurn = false;
 
@@ -318,32 +316,28 @@ public class MainScreenController implements Runnable {
 				yourTurn = true;
 				displayTurn(Turn.MyTurn);
 			}
-			// } else if (response.startsWith("VICTORY")) {
-			//javafx.application.Platform.runLater(new Runnable() {
-			//	@Override
-			//	public void run() {
-			//		LabelGamemssgs.setText("Komunikat:" + wonString);
-			//	}
-			//});
-			// break;
-			// } else if (response.startsWith("DEFEAT")) {
-			//javafx.application.Platform.runLater(new Runnable() {
-			//	@Override
-			//	public void run() {
-			//		LabelGamemssgs.setText("Komunikat:" + enemyWonString);
-			//	}
-			//});
-			// break;
-			// } else if (response.startsWith("TIE")) {
-			//javafx.application.Platform.runLater(new Runnable() {
-			//	@Override
-			//	public void run() {
-			//		LabelGamemssgs.setText("Komunikat:" + tieString);
-			//	}
-			//});
-
-			// break;
-			//}
+			  else if (response.startsWith("VICTORY")) {
+			javafx.application.Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					LabelGamemssgs.setText("Komunikat:" + wonString);
+				}
+			});
+			 } else if (response.startsWith("DEFEAT")) {
+			javafx.application.Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					LabelGamemssgs.setText("Komunikat:" + enemyWonString);
+				}
+			});
+			 } else if (response.startsWith("TIE")) {
+			javafx.application.Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					LabelGamemssgs.setText("Komunikat:" + tieString);
+				}
+			});
+			}
 			else if (response.startsWith("INVALID_MOVE")) {
 				javafx.application.Platform.runLater(new Runnable() {
 					@Override
@@ -382,15 +376,6 @@ public class MainScreenController implements Runnable {
 		gamePool.getChildren().addAll(tileGroup, pieceGroup, label);
 		connect();
 		displayTurn(Turn.None);
-//		if(playerType=='W') {
-//			myElipse.setFill(Color.WHITE);
-//			oppElipse.setFill(Color.RED);
-//		}
-//		else {
-//			myElipse.setFill(Color.RED);
-//			oppElipse.setFill(Color.WHITE);
-//		}
-
 	}
 
 	@FXML

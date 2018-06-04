@@ -29,7 +29,7 @@ class Game {
 
 	Player currentPlayer;
 	private Piece[][] board = new Piece[8][8];
-	boolean won, enemyWon, tie;
+	boolean won, tie;
 	private int queenMove = 0;
 	private int pieceCount = 0;
 
@@ -104,9 +104,9 @@ class Game {
 				won = true;
 
 			}
-			if ((yourPiece == 0 && oppPiece > 0) || (yourMove == 0 && oppMove > 0)) {
-				enemyWon = true;
-			}
+//			if ((yourPiece == 0 && oppPiece > 0) || (yourMove == 0 && oppMove > 0)) {
+//				enemyWon = true;
+//			}
 			if (queenMove >= 7 && pieceCount == (yourPiece + oppPiece)) {
 				tie = true;
 			}
@@ -353,8 +353,7 @@ class Game {
 		 */
 		public void otherPlayerMoved() {
 			output.println("OPPONENT_MOVED " + gameStatus());
-			// output.println(
-			// hasWinner() ? "DEFEAT" : boardFilledUp() ? "TIE" : "");
+			 output.println(won ? "DEFEAT" : tie ? "TIE" : "");
 		}
 
 		/**
@@ -369,7 +368,6 @@ class Game {
 					output.println("MSG Your move");
 				} else
 					output.println("MSG Opponen move");
-
 				// Repeatedly get commands from the client and process them.
 				while (true) {
 					String command = input.readLine();
@@ -393,6 +391,8 @@ class Game {
 							if (queenMove == 1)
 								pieceCount = numberOfPiece();
 							output.println("VALID_MOVE" + gameStatus());
+							checkWon();
+                            output.println(won ? "VICTORY" : tie ? "TIE": "");
 							currentPlayer = currentPlayer.opponent;
 							currentPlayer.otherPlayerMoved();
 						} else if (tryMove(oldX, oldY, newX, newY).getType() == MoveType.KILL) {
@@ -406,7 +406,9 @@ class Game {
 							changeType(newPiece);
 							queenMove=0;
 							if (!pieceStrike(newPiece)) {
+								checkWon();
 								output.println("VALID_MOVE" + gameStatus());
+								output.println(won ? "VICTORY" : tie ? "TIE": "");
 								currentPlayer = currentPlayer.opponent;
 								currentPlayer.otherPlayerMoved();
 							} else if (pieceStrike(newPiece)) {
