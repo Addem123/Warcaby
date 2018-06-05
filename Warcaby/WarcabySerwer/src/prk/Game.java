@@ -29,9 +29,8 @@ class Game {
 
 	Player currentPlayer;
 	private Piece[][] board = new Piece[8][8];
-	boolean won, tie;
+	boolean won=false, tie=false;
 	private int queenMove = 0;
-	private int pieceCount = 0;
 
 	/**
 	 * Called by the player threads when a player tries to make a move. This method
@@ -41,17 +40,6 @@ class Game {
 	 * square is set and the next player becomes current) and the other player is
 	 * notified of the move so it can update its client.
 	 */
-	public int numberOfPiece() {
-		int number = 0;
-		for (int y = 0; y < 8; y++) {
-			for (int x = 0; x < 8; x++) {
-				if (board[x][y] != null)
-					number++;
-			}
-		}
-		return number;
-	}
-
 	private void checkWon() {
 		int yourMove = 0;
 		int oppMove = 0;
@@ -102,12 +90,8 @@ class Game {
 			}
 			if (((yourPiece > 0 && oppPiece == 0) || (yourMove > 0 && oppMove == 0))) {
 				won = true;
-
 			}
-//			if ((yourPiece == 0 && oppPiece > 0) || (yourMove == 0 && oppMove > 0)) {
-//				enemyWon = true;
-//			}
-			if (queenMove >= 7 && pieceCount == (yourPiece + oppPiece)) {
+			if (queenMove >= 15) {
 				tie = true;
 			}
 		}
@@ -144,7 +128,6 @@ class Game {
 		if (!piece.isQueen()) {
 			if (Math.abs(newX - oldX) == 1 && newY - oldY == piece.getType().getMoveDir()
 					&& piece.getType() == currentPlayer.type && checkNumberOfStrikes(currentPlayer.type) == 0) {
-				System.out.println("bicia: " + checkNumberOfStrikes(currentPlayer.type));
 				return new MoveResult(MoveType.NORMAL);
 			} else if (Math.abs(newX - oldX) == 2 && piece.getType() == currentPlayer.type) {
 				int x1 = oldX + (newX - oldX) / 2;
@@ -187,7 +170,6 @@ class Game {
 
 	public String gameStatus() {
 		String gameStatus = "";
-		// if(!tie) {
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
 				Piece piece = board[x][y];
@@ -204,10 +186,6 @@ class Game {
 			}
 		}
 		return gameStatus;
-		// }
-		// else gameStatus="6";
-		// return gameStatus;
-
 	}
 
 	public void changeType(Piece piece) {
@@ -222,18 +200,18 @@ class Game {
 		int y = piece.getOldY();
 		if (!piece.isQueen()) {
 			if ((x - 2 >= 0 && y - 2 >= 0 && board[x - 1][y - 1] != null
-					&& board[x - 1][y - 1].getType() != currentPlayer.type && board[x - 2][y - 2] == null))
+					&& board[x - 1][y - 1].getType() != piece.getType() && board[x - 2][y - 2] == null))
 				return true;
 
 			if (x + 2 <= 7 && y - 2 >= 0 && board[x + 1][y - 1] != null
-					&& board[x + 1][y - 1].getType() != currentPlayer.type && board[x + 2][y - 2] == null)
+					&& board[x + 1][y - 1].getType() != piece.getType() && board[x + 2][y - 2] == null)
 				return true;
 			if ((x - 2 >= 0 && y + 2 <= 7 && board[x - 1][y + 1] != null
-					&& board[x - 1][y + 1].getType() != currentPlayer.type && board[x - 2][y + 2] == null))
+					&& board[x - 1][y + 1].getType() != piece.getType() && board[x - 2][y + 2] == null))
 				return true;
 
 			if (x + 2 <= 7 && y + 2 <= 7 && board[x + 1][y + 1] != null
-					&& board[x + 1][y + 1].getType() != currentPlayer.type && board[x + 2][y + 2] == null)
+					&& board[x + 1][y + 1].getType() != piece.getType() && board[x + 2][y + 2] == null)
 				return true;
 		} else {
 			if ((x >= 2 && y >= 2)) {
@@ -243,10 +221,10 @@ class Game {
 				while (x >= 2 && y >= 2) {
 					--x;
 					--y;
-					if (board[x][y] != null && (board[x][y].getType() == currentPlayer.type
-							|| (board[x][y].getType() != currentPlayer.type && board[x - 1][y - 1] != null)))
+					if (board[x][y] != null && (board[x][y].getType() == piece.getType()
+							|| (board[x][y].getType() != piece.getType() && board[x - 1][y - 1] != null)))
 						a++;
-					if (board[x][y] != null && board[x][y].getType() != currentPlayer.type
+					if (board[x][y] != null && board[x][y].getType() != piece.getType()
 							&& board[x - 1][y - 1] == null && a == 0)
 						return true;
 				}
@@ -258,10 +236,10 @@ class Game {
 				while (x <= 5 && y >= 2) {
 					x++;
 					y--;
-					if (board[x][y] != null && (board[x][y].getType() == currentPlayer.type
-							|| (board[x][y].getType() != currentPlayer.type && board[x + 1][y - 1] != null)))
+					if (board[x][y] != null && (board[x][y].getType() == piece.getType()
+							|| (board[x][y].getType() != piece.getType() && board[x + 1][y - 1] != null)))
 						a++;
-					if (board[x][y] != null && board[x][y].getType() != currentPlayer.type
+					if (board[x][y] != null && board[x][y].getType() != piece.getType()
 							&& board[x + 1][y - 1] == null && a == 0)
 						return true;
 				}
@@ -273,10 +251,10 @@ class Game {
 				while (x >= 2 && y <= 5) {
 					x--;
 					y++;
-					if (board[x][y] != null && (board[x][y].getType() == currentPlayer.type
-							|| (board[x][y].getType() != currentPlayer.type && board[x - 1][y + 1] != null)))
+					if (board[x][y] != null && (board[x][y].getType() == piece.getType()
+							|| (board[x][y].getType() != piece.getType() && board[x - 1][y + 1] != null)))
 						a++;
-					if (board[x][y] != null && board[x][y].getType() != currentPlayer.type
+					if (board[x][y] != null && board[x][y].getType() != piece.getType()
 							&& board[x - 1][y + 1] == null && a == 0)
 						return true;
 				}
@@ -288,10 +266,10 @@ class Game {
 				while (x <= 5 && y <= 5) {
 					x++;
 					y++;
-					if (board[x][y] != null && (board[x][y].getType() == currentPlayer.type
-							|| (board[x][y].getType() != currentPlayer.type && board[x + 1][y + 1] != null)))
+					if (board[x][y] != null && (board[x][y].getType() == piece.getType()
+							|| (board[x][y].getType() != piece.getType() && board[x + 1][y + 1] != null)))
 						a++;
-					if (board[x][y] != null && board[x][y].getType() != currentPlayer.type
+					if (board[x][y] != null && board[x][y].getType() != piece.getType()
 							&& board[x + 1][y + 1] == null && a == 0)
 						return true;
 				}
@@ -381,17 +359,15 @@ class Game {
 						} else if (tryMove(oldX, oldY, newX, newY).getType() == MoveType.NORMAL) {
 							Piece piece = board[oldX][oldY];
 							board[oldX][oldY] = null;
-							board[newX][newY] = new Piece(piece.getType(), newX, newY, piece.isQueen());
 							Piece newPiece = new Piece(piece.getType(), newX, newY, piece.isQueen());
+							board[newX][newY] = newPiece;;
 							changeType(newPiece);
-							if (piece.isQueen())
+							if (piece.isQueen()) {
 								queenMove++;
-							else
+							}else
 								queenMove = 0;
-							if (queenMove == 1)
-								pieceCount = numberOfPiece();
-							output.println("VALID_MOVE" + gameStatus());
 							checkWon();
+							output.println("VALID_MOVE" + gameStatus());
                             output.println(won ? "VICTORY" : tie ? "TIE": "");
 							currentPlayer = currentPlayer.opponent;
 							currentPlayer.otherPlayerMoved();
@@ -421,8 +397,6 @@ class Game {
 						currentPlayer = currentPlayer.opponent;
 						currentPlayer.sendopponentNick(tempnick);
 					}
-					
-					
 					else if (command.startsWith("QUIT")) {
 						return;
 					}

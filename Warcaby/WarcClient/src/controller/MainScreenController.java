@@ -65,9 +65,6 @@ public class MainScreenController implements Runnable {
 	private String opponentNick = "pusty";
 	private char playerType;
 
-	private int errors = 0;
-	private int queenMove = 0;
-	private int pieceCount = 0;
 	private Label label = new Label();
 	private Tile[][] tileMatrix = new Tile[8][8];
 	Group tileGroup = new Group();
@@ -168,7 +165,6 @@ public class MainScreenController implements Runnable {
 	private int toBoard(double pixel) {
 		int a = (int) (pixel + Tile.getTileSize() / 2) / Tile.getTileSize();
 		return a;
-
 	}
 
 	public Piece movePiece(PieceType type, int x, int y, boolean isQueen) {
@@ -187,8 +183,6 @@ public class MainScreenController implements Runnable {
 
 	private void repaint(String s) {
 		if (s.length() == 64) {
-			// ll.setText(s);
-			// if(!s.equals("6")) {
 			pieceGroup.getChildren().remove(0, pieceGroup.getChildren().size());
 			for (int y = 0; y < 8; y++) {
 				for (int x = 0; x < 8; x++) {
@@ -225,12 +219,8 @@ public class MainScreenController implements Runnable {
 		String response;
 		try {
 			response = in.readLine();
-			// hostField.setText(response);
-			// System.out.println(response);
 			if (response.startsWith("WELCOME")) {
-				char playerType = response.charAt(8);
-				//System.out.print(mark);
-				//playerType = mark;
+				playerType = response.charAt(8);
 			}
 
 			else if (response.startsWith("MESSAGE Waiting for opponent to connect")) {
@@ -240,7 +230,6 @@ public class MainScreenController implements Runnable {
 						LabelGamemssgs.setText("Komunikat:" + waitingString);
 					}
 				});
-			//	accepted = true;
 			} else if (response.startsWith("OPPONNENTNICK")) {
 				opponentNick = response.replace("OPPONNENTNICK", "");
 				if (playerType == 'W') {
@@ -323,6 +312,7 @@ public class MainScreenController implements Runnable {
 					LabelGamemssgs.setText("Komunikat:" + wonString);
 				}
 			});
+			displayTurn(Turn.None);
 			 } else if (response.startsWith("DEFEAT")) {
 			javafx.application.Platform.runLater(new Runnable() {
 				@Override
@@ -330,6 +320,7 @@ public class MainScreenController implements Runnable {
 					LabelGamemssgs.setText("Komunikat:" + enemyWonString);
 				}
 			});
+			displayTurn(Turn.None);
 			 } else if (response.startsWith("TIE")) {
 			javafx.application.Platform.runLater(new Runnable() {
 				@Override
@@ -337,6 +328,7 @@ public class MainScreenController implements Runnable {
 					LabelGamemssgs.setText("Komunikat:" + tieString);
 				}
 			});
+			displayTurn(Turn.None);
 			}
 			else if (response.startsWith("INVALID_MOVE")) {
 				javafx.application.Platform.runLater(new Runnable() {
@@ -346,17 +338,17 @@ public class MainScreenController implements Runnable {
 					}
 				});
 			}
-			// }
+			//out.println("QUIT");
 		}
 
 		catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// out.println("QUIT");
-		// finally {
-		// socket.close();
-		// }
+		 
+//		 finally {
+//		 socket.close();
+//		 }
 	}
 
 	private void connect() {
@@ -416,9 +408,8 @@ public class MainScreenController implements Runnable {
 		while (true) {
 			try {
 				play();
-				Toolkit.getDefaultToolkit().sync();
+				//Toolkit.getDefaultToolkit().sync();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
