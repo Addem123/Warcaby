@@ -33,7 +33,7 @@ public class Main extends Application {
 		    primaryStage.setScene(scene);
 		    primaryStage.show();
 		    scene.getStylesheets().add
-	        (Main.class.getResource("classic.css").toExternalForm());
+	        (Main.class.getResource("application.css").toExternalForm());
 		    
 		    
 		} catch (IOException e) {

@@ -107,13 +107,13 @@ public class MainScreenController implements Runnable {
 
 	private void setNickLabel() {
 		if (playerType == 'R') {
-					redPlayerNick.setText("Nick: "+ yourNick);
-					redPlayerNick.setVisible(true);
+			redPlayerNick.setText("Nick: " + yourNick);
+			redPlayerNick.setVisible(true);
 		}
 		if (playerType == 'W') {
-					whitePlayerNick.setText("Nick: "+yourNick);
-					whitePlayerNick.setVisible(true);
-				}
+			whitePlayerNick.setText("Nick: " + yourNick);
+			whitePlayerNick.setVisible(true);
+		}
 	}
 
 	public enum Turn {
@@ -221,22 +221,15 @@ public class MainScreenController implements Runnable {
 			response = in.readLine();
 			if (response.startsWith("WELCOME")) {
 				playerType = response.charAt(8);
-			}
-
-			else if (response.startsWith("MESSAGE Waiting for opponent to connect")) {
-				javafx.application.Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						LabelGamemssgs.setText("Komunikat:" + waitingString);
-					}
-				});
+			} else if (response.startsWith("MESSAGE Waiting for opponent to connect")) {
+				showMsg(waitingString);
 			} else if (response.startsWith("OPPONNENTNICK")) {
 				opponentNick = response.replace("OPPONNENTNICK", "");
 				if (playerType == 'W') {
 					javafx.application.Platform.runLater(new Runnable() {
 						@Override
 						public void run() {
-							redPlayerNick.setText("Nick: "+opponentNick);
+							redPlayerNick.setText("Nick: " + opponentNick);
 							redPlayerNick.setVisible(true);
 						}
 					});
@@ -245,110 +238,79 @@ public class MainScreenController implements Runnable {
 					javafx.application.Platform.runLater(new Runnable() {
 						@Override
 						public void run() {
-							whitePlayerNick.setText("Nick: "+opponentNick);
+							whitePlayerNick.setText("Nick: " + opponentNick);
 							whitePlayerNick.setVisible(true);
-
 						}
 					});
 				}
-
-			}
-
-			else if (response.startsWith("MESSAGE All players connected")) {
+			} else if (response.startsWith("MESSAGE All players connected")) {
 				setNickLabel();
-				javafx.application.Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						LabelGamemssgs.setText("Komunikat: Gramy !");
-					}
-				});
-
+				showMsg("Gramy!");
 				accepted = true;
 				out.println("NICK" + yourNick);
-
 			} else if (response.startsWith("MSG Your move")) {
 				yourTurn = true;
 				myElipse.setFill(Color.valueOf("#fff9f4"));
 				oppElipse.setFill(Color.valueOf("#c40003"));
 				displayTurn(Turn.MyTurn);
-
 			} else if (response.startsWith("MSG Opponen move")) {
 				myElipse.setFill(Color.valueOf("#c40003"));
 				oppElipse.setFill(Color.valueOf("#fff9f4"));
 				displayTurn(Turn.OpponentTurn);
 				yourTurn = false;
-
 			} else if (response.startsWith("MOREKILL")) {
-				javafx.application.Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						repaint(response.substring(8));
-					}
-				});
-
+				showMove(response.substring(8));
 			} else if (response.startsWith("VALID_MOVE")) {
-				javafx.application.Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						repaint(response.substring(10));					}
-				});
+				showMove(response.substring(10));
 				displayTurn(Turn.OpponentTurn);
 				yourTurn = false;
-
 			} else if (response.startsWith("OPPONENT_MOVED")) {
-				javafx.application.Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						repaint(response.substring(15));
-					}
-				});
+				showMove(response.substring(15));
 				yourTurn = true;
 				displayTurn(Turn.MyTurn);
+			} else if (response.startsWith("VICTORY")) {
+				showMsg(wonString);
+				displayTurn(Turn.None);
+			} else if (response.startsWith("DEFEAT")) {
+				showMsg(enemyWonString);
+				displayTurn(Turn.None);
+			} else if (response.startsWith("TIE")) {
+				showMsg(tieString);
+				displayTurn(Turn.None);
+			} else if (response.startsWith("INVALID_MOVE")) {
+				showMove(response.substring(12));
 			}
-			  else if (response.startsWith("VICTORY")) {
-			javafx.application.Platform.runLater(new Runnable() {
-				@Override
-				public void run() {
-					LabelGamemssgs.setText("Komunikat:" + wonString);
-				}
-			});
-			displayTurn(Turn.None);
-			 } else if (response.startsWith("DEFEAT")) {
-			javafx.application.Platform.runLater(new Runnable() {
-				@Override
-				public void run() {
-					LabelGamemssgs.setText("Komunikat:" + enemyWonString);
-				}
-			});
-			displayTurn(Turn.None);
-			 } else if (response.startsWith("TIE")) {
-			javafx.application.Platform.runLater(new Runnable() {
-				@Override
-				public void run() {
-					LabelGamemssgs.setText("Komunikat:" + tieString);
-				}
-			});
-			displayTurn(Turn.None);
-			}
-			else if (response.startsWith("INVALID_MOVE")) {
-				javafx.application.Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						repaint(response.substring(12));
-					}
-				});
-			}
-			//out.println("QUIT");
+			// out.println("QUIT");
 		}
 
 		catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		 
-//		 finally {
-//		 socket.close();
-//		 }
+
+		// finally {
+		// socket.close();
+		// }
+	}
+
+	public void showMsg(String str) {
+
+		javafx.application.Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				LabelGamemssgs.setText("Komunikat:" + str);
+			}
+		});
+	}
+
+	public void showMove(String str) {
+
+		javafx.application.Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				repaint(str);
+			}
+		});
 	}
 
 	private void connect() {
@@ -408,7 +370,7 @@ public class MainScreenController implements Runnable {
 		while (true) {
 			try {
 				play();
-				//Toolkit.getDefaultToolkit().sync();
+				// Toolkit.getDefaultToolkit().sync();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
