@@ -49,7 +49,7 @@
                   <Font name="System Bold" size="15.0" />
                </font></Label>
             <Ellipse fx:id="myElipse" fill="DODGERBLUE" radiusX="22.75" radiusY="18.2" stroke="BLACK" strokeType="INSIDE" strokeWidth="2.0" />
-            <Label fx:id="whitePlayerNick" alignment="CENTER" prefHeight="100.0" prefWidth="60.0" text="Label2" textOverrun="CENTER_ELLIPSIS" translateY="150.0" visible="false" wrapText="true">
+            <Label fx:id="myNick" alignment="CENTER" prefHeight="100.0" prefWidth="60.0" textOverrun="CENTER_ELLIPSIS" translateY="150.0" visible="false" wrapText="true">
                <VBox.margin>
                   <Insets />
                </VBox.margin>
@@ -69,7 +69,7 @@
    <right>
       <VBox alignment="CENTER" maxWidth="110.0" prefHeight="100.0" BorderPane.alignment="CENTER">
          <children>
-            <Label fx:id="redPlayerNick" alignment="CENTER" prefHeight="100.0" prefWidth="60.0" text="Label1" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" translateY="-150.0" visible="false" wrapText="true">
+            <Label fx:id="enemyNick" alignment="CENTER" prefHeight="100.0" prefWidth="60.0" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" translateY="-150.0" visible="false" wrapText="true">
                <font>
                   <Font name="System Bold" size="15.0" />
                </font>
