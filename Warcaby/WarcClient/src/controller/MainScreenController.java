@@ -1,20 +1,11 @@
 package controller;
 
-import java.awt.Toolkit;
 import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
-
-import javax.swing.ImageIcon;
-
-import controller.MainScreenController.Turn;
 import javafx.application.Platform;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.event.ActionEvent;
@@ -29,7 +20,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.stage.Stage;
-import javafx.util.converter.NumberStringConverter;
 import model.Piece;
 import model.PieceType;
 import model.Tile;
@@ -48,21 +38,12 @@ public class MainScreenController implements Runnable {
 
 	private boolean yourTurn = false;
 	private boolean accepted = false;
-	private boolean unableToCommunicateWithOpponent = false;
-	private boolean won = false;
-	private boolean enemyWon = false;
-	private boolean tie = false;
 
 	private String ip = "localhost";
-	private String game = null;
 	private String waitingString = "Oczekiwanie na drugiego gracza";
-	private String unableToCommunicateWithOpponentString = "Nie mo¿na po³¹czyæ siê z drugim graczem";
 	private String wonString = "Wygra³eœ";
 	private String enemyWonString = "Przeciwnik wygra³";
 	private String tieString = "Gra zakoñczona remisem";
-
-	private String yourNick = "puste";
-	private String opponentNick = "pusty";
 	private char playerType;
 
 	private Label label = new Label();
@@ -76,14 +57,6 @@ public class MainScreenController implements Runnable {
 	@FXML
 	private Pane gamePool;
 	@FXML
-	private TextField portField;
-	@FXML
-	private TextField hostField;
-	@FXML
-	private Button connectButton;
-	@FXML
-	private Button disconnectButton;
-	@FXML
 	private Label myTurn;
 	@FXML
 	private Label oppTurn;
@@ -92,29 +65,18 @@ public class MainScreenController implements Runnable {
 	@FXML
 	private Ellipse oppElipse;
 	@FXML
-	private Label redPlayerNick;
+	private Label myNick;
 	@FXML
-	private Label whitePlayerNick;
+	private Label enemyNick;
 	@FXML
 	private Label LabelGamemssgs;
 
 	public void setStage(ControllerUser controllerUser, Stage primaryStage) {
 		this.controllerUser = controllerUser;
 		this.primaryStage = primaryStage;
-		yourNick = controllerUser.getLocaluser();
-		setNickLabel();
+		myNick.setText(controllerUser.getLocaluser());
+		myNick.setVisible(true);
 	};
-
-	private void setNickLabel() {
-		if (playerType == 'R') {
-			redPlayerNick.setText("Nick: " + yourNick);
-			redPlayerNick.setVisible(true);
-		}
-		if (playerType == 'W') {
-			whitePlayerNick.setText("Nick: " + yourNick);
-			whitePlayerNick.setVisible(true);
-		}
-	}
 
 	public enum Turn {
 		MyTurn, OpponentTurn, None
@@ -224,30 +186,22 @@ public class MainScreenController implements Runnable {
 			} else if (response.startsWith("MESSAGE Waiting for opponent to connect")) {
 				showMsg(waitingString);
 			} else if (response.startsWith("OPPONNENTNICK")) {
-				opponentNick = response.replace("OPPONNENTNICK", "");
-				if (playerType == 'W') {
-					javafx.application.Platform.runLater(new Runnable() {
-						@Override
-						public void run() {
-							redPlayerNick.setText("Nick: " + opponentNick);
-							redPlayerNick.setVisible(true);
-						}
-					});
-				}
-				if (playerType == 'R') {
-					javafx.application.Platform.runLater(new Runnable() {
-						@Override
-						public void run() {
-							whitePlayerNick.setText("Nick: " + opponentNick);
-							whitePlayerNick.setVisible(true);
-						}
-					});
-				}
+				javafx.application.Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						enemyNick.setText(response.replace("OPPONNENTNICK", ""));
+						enemyNick.setVisible(true);
+					}
+				});
 			} else if (response.startsWith("MESSAGE All players connected")) {
-				setNickLabel();
-				showMsg("Gramy!");
+				javafx.application.Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						out.println("NICK" + playerType + myNick.getText());
+					}
+				});	
 				accepted = true;
-				out.println("NICK" + yourNick);
+				showMsg("Gramy!");
 			} else if (response.startsWith("MSG Your move")) {
 				yourTurn = true;
 				myElipse.setFill(Color.valueOf("#fff9f4"));
@@ -292,34 +246,31 @@ public class MainScreenController implements Runnable {
 		// socket.close();
 		// }
 	}
-
-	public void showMsg(String str) {
-
+	private void showMsg(String msg) {
 		javafx.application.Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				LabelGamemssgs.setText("Komunikat:" + str);
+				LabelGamemssgs.setText("Komunikat:" + msg);
 			}
 		});
 	}
 
-	public void showMove(String str) {
-
+	private void showMove(String msg) {
 		javafx.application.Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				repaint(str);
+				repaint(msg);
 			}
 		});
 	}
-
-	private void connect() {
+	private void connect() throws InterruptedException {
 		try {
 			socket = new Socket(ip, port.intValue());
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out = new PrintWriter(socket.getOutputStream(), true);
 			thread = new Thread(this, "MainScreenController");
 			thread.start();
+			//thread.join();
 		} catch (IOException e) {
 		}
 	}
@@ -328,17 +279,15 @@ public class MainScreenController implements Runnable {
 	private void initialize() throws Exception {
 		createContent();
 		gamePool.getChildren().addAll(tileGroup, pieceGroup, label);
-		connect();
 		displayTurn(Turn.None);
+		connect();
 	}
 
 	@FXML
 	void closeApplication() {
 		Platform.exit();
 		System.exit(0);
-
 	}
-
 	@FXML
 	void setClassic() {
 		Stage stage = (Stage) borderPane.getScene().getWindow();

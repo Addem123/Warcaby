@@ -6,7 +6,11 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-import prk.Game.Player;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+
 
 class Game {
 
@@ -31,6 +35,9 @@ class Game {
 	private Piece[][] board = new Piece[8][8];
 	boolean won=false, tie=false;
 	private int queenMove = 0;
+	StringProperty redPlayer=new SimpleStringProperty("puste");
+	StringProperty whitePlayer=new SimpleStringProperty("puste");
+	//String whitePlayer=null;
 
 	/**
 	 * Called by the player threads when a player tries to make a move. This method
@@ -286,7 +293,7 @@ class Game {
 		Socket socket;
 		BufferedReader input;
 		PrintWriter output;
-		String nick;
+		//String nick;
 
 		/**
 		 * Constructs a handler thread for a given socket and mark initializes the
@@ -296,6 +303,14 @@ class Game {
 			this.socket = socket;
 			this.mark = mark;
 			this.type = type;
+			redPlayer.addListener((obs, ov, nv) -> {
+				if(mark=='W')
+				output.println("OPPONNENTNICK" +nv );
+	        });
+			whitePlayer.addListener((obs, ov, nv) -> {
+				if(mark=='R')
+				output.println("OPPONNENTNICK" +nv);
+	        });
 			try {
 				input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				output = new PrintWriter(socket.getOutputStream(), true);
@@ -305,20 +320,6 @@ class Game {
 				System.out.println("Player died: " + e);
 			}
 		}
-
-		/*public String getNick() throws IOException {
-			String command = input.readLine();
-			if (command.startsWith("NICK")) {
-				nick = command.substring(command.indexOf("NICK"));
-				System.out.println(nick);
-			}
-			return nick;
-		};*/
-		
-		public void sendopponentNick(String nick) {
-			output.println("OPPONNENTNICK" + nick);
-		};
-
 		/**
 		 * Accepts notification of who the opponent is.
 		 */
@@ -340,14 +341,15 @@ class Game {
 		public void run() {
 			try {
 				// The thread is only started after everyone connects.
-				output.println("MESSAGE All players connected");
+	             output.println("MESSAGE All players connected");
 				// Tell the first player that it is her turn.
-				if (mark == 'W') {
+	             if (mark == 'W') {
 					output.println("MSG Your move");
-				} else
+				} else if(mark == 'R')  {
 					output.println("MSG Opponen move");
+				}
 				// Repeatedly get commands from the client and process them.
-				while (true) {
+				while (true) {	
 					String command = input.readLine();
 					if (command.startsWith("MOVE")) {
 						int oldX = Integer.parseInt(command.substring(5, 6));
@@ -391,12 +393,12 @@ class Game {
 								output.println("MOREKILL" + gameStatus());
 							}
 						}
-					} else if(command.startsWith("NICK")) {
-						nick = command.replace("NICK","");
-						String tempnick = nick;
-						currentPlayer = currentPlayer.opponent;
-						currentPlayer.sendopponentNick(tempnick);
+					} else if(command.startsWith("NICKW")) {
+						whitePlayer.set(command.replace("NICKW",""));
 					}
+					 else if(command.startsWith("NICKR")) {
+							redPlayer.set(command.replace("NICKR",""));	
+						}
 					else if (command.startsWith("QUIT")) {
 						return;
 					}
