@@ -44,9 +44,6 @@ public class MainScreenController implements Runnable {
 	private String wonString = "Wygra³eœ";
 	private String enemyWonString = "Przeciwnik wygra³";
 	private String tieString = "Gra zakoñczona remisem";
-
-	private String yourNick = "puste";
-	private String opponentNick = "pusty";
 	private char playerType;
 
 	private Label label = new Label();
@@ -267,13 +264,14 @@ public class MainScreenController implements Runnable {
 			}
 		});
 	}
-	private void connect() {
+	private void connect() throws InterruptedException {
 		try {
 			socket = new Socket(ip, port.intValue());
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out = new PrintWriter(socket.getOutputStream(), true);
 			thread = new Thread(this, "MainScreenController");
 			thread.start();
+			//thread.join();
 		} catch (IOException e) {
 		}
 	}
