@@ -12,8 +12,18 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
 
+/**
+ * Klasa reprezetujaca gre. Gra posiada dwoch graczy(whitePlayer,redPlayer),
+ * plansze do gry(board),konczye sie zwycieñstwem lub remisem(won tie)
+ * @author 
+ *
+ */
 class Game {
 
+	/**
+	 * Tworzenie nowej gry. Konstruktor wype³nia tablice obiektami klasy Piece reprezentujacymi 
+	 * pionki do gry
+	 */
 	public Game() {
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
@@ -28,24 +38,37 @@ class Game {
 	}
 
 	/**
-	 * The current player.
+	 * Obecny gracz
 	 */
-
 	Player currentPlayer;
-	private Piece[][] board = new Piece[8][8];
-	boolean won=false, tie=false;
-	private int queenMove = 0;
-	StringProperty redPlayer=new SimpleStringProperty("puste");
-	StringProperty whitePlayer=new SimpleStringProperty("puste");
-	//String whitePlayer=null;
-
+	
 	/**
-	 * Called by the player threads when a player tries to make a move. This method
-	 * checks to see if the move is legal: that is, the player requesting the move
-	 * must be the current player and the square in which she is trying to move must
-	 * not already be occupied. If the move is legal the game state is updated (the
-	 * square is set and the next player becomes current) and the other player is
-	 * notified of the move so it can update its client.
+	 * Tablica obiektów klasy Piece
+	 */
+	private Piece[][] board = new Piece[8][8];
+	
+	/**
+	 * Zmienne mowiace czy gra zakoñczy³a sie zwycieñstwen jednego z graczy czy remisem
+	 */
+	boolean won=false, tie=false;
+	
+	/**
+	 * ilosc ruchów damka. Zmienna wykorzystywana do ustalenia czy gra zakonczy sie remisem
+	 */
+	private int queenMove = 0;
+	
+	/**
+	 * Nick gracza poruszajacego sie bia³ymi pionkami 
+	 */
+	StringProperty redPlayer=new SimpleStringProperty("puste");
+	/**
+	 * Nick gracza poruszajacego sie czerwonymi pionkami 
+	 */
+	StringProperty whitePlayer=new SimpleStringProperty("puste");
+	
+	/**
+	 * Metoda sprawdzajaca czy obecny gracz nie wygra³ starcia lub go nie zremisowa³
+	 * jesli tak ustawia zmienne won lub tie na true
 	 */
 	private void checkWon() {
 		int yourMove = 0;
@@ -104,6 +127,16 @@ class Game {
 		}
 	}
 
+	/**
+	 * Metoda sprawdzajaca czy ruch wykonany przez pionek bedacy damka jest prawid³owy
+	 * @param x - obecna wspó³rzedna X pionka na planszy
+	 * @param y- obecna wspó³rzedna Y pionka na planszy
+	 * @param newX- nowa wspó³rzedna X pionka na planszy
+	 * @param newY- nowa wspó³rzedna Y pionka na planszy
+	 * @return obiekt klasy Piece 1) null gdy na linii ruchu nie ma pionków 2) piece typu przeciwnego do gracza wykonujacego
+	 * ruch gry na linii ruchu jest jeden pionek przeciwnika 3)piece tego samego typu gdy na linii ruchu jest wiecej niz jeden
+	 * pionek lub jest wlasny pionek
+	 */
 	private Piece checkQueenMove(int x, int y, int newX, int newY) {
 		int pieceToKill = 0;
 		int pieceCount = 0;
@@ -127,6 +160,14 @@ class Game {
 		return new Piece(currentPlayer.type, 0, 0, false);
 	}
 
+	/**
+	 * Metoda sprawdzajaca jaki rodzaj ruchu moze wykonac pionek przemieszczajacy sie z punktu(x,y) do (newX,newY)
+	* @param x - obecna wspó³rzedna X pionka na planszy
+	 * @param y- obecna wspó³rzedna Y pionka na planszy
+	 * @param newX- nowa wspó³rzedna X pionka na planszy
+	 * @param newY- nowa wspó³rzedna Y pionka na planszy
+	 * @return zwraca obiekt klasy MoveResult
+	 */
 	public MoveResult tryMove(int oldX, int oldY, int newX, int newY) {
 		Piece piece = board[oldX][oldY];
 		if (newX >= 8 || newX < 0 || newY > 7 || newY < 0 || board[newX][newY] != null || (newX + newY) % 2 == 0
@@ -158,10 +199,14 @@ class Game {
 				return new MoveResult(MoveType.KILL, checkQueenMove(oldX, oldY, newX, newY));
 			}
 		}
-
 		return new MoveResult(MoveType.NONE);
 	}
 
+	/**
+	 * Metoda sprawdza ilosc biæ z danego typu pionkow(white,red)
+	 * @param type - typ pionka
+	 * @return zwraca ilosc biæ
+	 */
 	private int checkNumberOfStrikes(PieceType type) {
 		int c = 0;
 		for (int y = 0; y < 8; y++) {
@@ -175,6 +220,10 @@ class Game {
 		return c;
 	}
 
+	/**
+	 * Metoda tworzy string opisujacy poloszenie pionków na planszy
+	 * @return zwraca string z stanem gry
+	 */
 	public String gameStatus() {
 		String gameStatus = "";
 		for (int y = 0; y < 8; y++) {
@@ -195,6 +244,11 @@ class Game {
 		return gameStatus;
 	}
 
+	/**
+	 * Metoda zmienia pole isQueen na true w obiekcie typu Piece gdy ten pojawi sie w ostatniej 
+	 * linii planszy w kierunku w którym sie porusza³
+	 * @param piece -obiekt klasy Piece dla ktorego sprawdzamy czy nalezy mu zmienic pole isQueen
+	 */
 	public void changeType(Piece piece) {
 		if ((piece.getOldY() == 7 && piece.getType() == PieceType.RED && !piece.isQueen())
 				|| (piece.getOldY() == 0 && piece.getType() == PieceType.WHITE && !piece.isQueen())) {
@@ -202,6 +256,11 @@ class Game {
 		}
 	}
 
+	/**
+	 * Metoda sprawdzajaca czy dany pionek(obiekt typy Piece) ma koniecznosc zbicia pionka przeciwnika
+	 * @param piece - obiekt klasy Piece dla ktorego sprawdzamy czy ma bicie
+	 * @return zwraca true gdy jest bicie lub false gdy go nie ma
+	 */
 	private boolean pieceStrike(Piece piece) {
 		int x = piece.getOldX();
 		int y = piece.getOldY();
@@ -286,6 +345,11 @@ class Game {
 		return false;
 	}
 
+	/**
+	 * Klasa wewnetrzna reprezentujaca gracza. Gracz na swój typ(white,red),ma opponenta, strumienie wymiany danych
+	 * @author GRAV40123
+	 *
+	 */
 	class Player extends Thread {
 		char mark;
 		PieceType type;
@@ -296,8 +360,9 @@ class Game {
 		//String nick;
 
 		/**
-		 * Constructs a handler thread for a given socket and mark initializes the
-		 * stream fields, displays the first two welcoming messages.
+		 * Konstruuje w¹tek obs³ugi dla danego gniazda, znak oraz typ 
+		 * dodaje listenery do pól okreslajacego nicki graczy
+		 * inicjuje pola strumieniowe i wysy³a wiadomosci powitalne
 		 */
 		public Player(Socket socket, char mark, PieceType type) {
 			this.socket = socket;
@@ -321,14 +386,15 @@ class Game {
 			}
 		}
 		/**
-		 * Accepts notification of who the opponent is.
+		 * Akceptuje powiadomienie o tym, kto jest przeciwnikiem.
 		 */
 		public void setOpponent(Player opponent) {
 			this.opponent = opponent;
 		}
 
 		/**
-		 * Handles the otherPlayerMoved message.
+		 * Obs³uguje komunikat otherPlayerMoved i sprawdza czy po ruchu przeciwnika nie 
+		 * przegralismy lub nie ma remisu
 		 */
 		public void otherPlayerMoved() {
 			output.println("OPPONENT_MOVED " + gameStatus());
@@ -336,21 +402,28 @@ class Game {
 		}
 
 		/**
-		 * The run method of this thread.
+		 * Metoda run tego watku.
 		 */
 		public void run() {
 			try {
-				// The thread is only started after everyone connects.
+				// W¹tek jest uruchamiany dopiero po tym, jak wszyscy siê po³¹cz¹.
 	             output.println("MESSAGE All players connected");
-				// Tell the first player that it is her turn.
+				// Powiedz pierwszemu graczowi, ¿e nadszed³ jej ruch.
 	             if (mark == 'W') {
 					output.println("MSG Your move");
+					// Powiedz drugiemu graczowi, ¿e rusza³ bedzie sie przeciwnik
 				} else if(mark == 'R')  {
 					output.println("MSG Opponen move");
 				}
-				// Repeatedly get commands from the client and process them.
+				// Wielokrotnie otrzymuj polecenia od klienta i przetwarzaj je.
 				while (true) {	
 					String command = input.readLine();
+					//Jesli wiadomosc zaczyna sie od MOVE sprawdz jakiego typu to by³ ruch:
+					//-jesli ruch jest typu NONE- wiadodosc go gracza INVALIDMOVE
+					//-jesli ruch jest  typu NORMAL-przesuniecie pionka, sprawdzenie koñca gry 
+					// wys³anie wiadomosci do gracza z aktualnym stanem gry zmienienie gracza i wys³anie jemu stanu gry
+					// - jeœli ruch jest typu kill-przesuniecie pionka,usuniêcie pionka zbitego,sprawdzenie koñca gry 
+					// wys³anie wiadomosci do gracza z aktualnym stanem gry zmienienie gracza i wys³anie jemu stanu gry
 					if (command.startsWith("MOVE")) {
 						int oldX = Integer.parseInt(command.substring(5, 6));
 						int oldY = Integer.parseInt(command.substring(6, 7));
@@ -393,9 +466,11 @@ class Game {
 								output.println("MOREKILL" + gameStatus());
 							}
 						}
+						//ustawienie nicku gracza bia³ego
 					} else if(command.startsWith("NICKW")) {
 						whitePlayer.set(command.replace("NICKW",""));
 					}
+					//ustawienie nicku gracza czerwonego
 					 else if(command.startsWith("NICKR")) {
 							redPlayer.set(command.replace("NICKR",""));	
 						}

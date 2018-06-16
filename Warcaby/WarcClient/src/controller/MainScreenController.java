@@ -5,10 +5,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+
+import com.sun.javafx.tk.Toolkit;
+
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
@@ -20,16 +24,20 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import model.Piece;
 import model.PieceType;
 import model.Tile;
 
+/**
+ * Klasa controlera glownago ekranu programu
+ * @author £ukasz Makowski
+ *
+ */
 public class MainScreenController implements Runnable {
 
 	private Stage primaryStage;
-
 	ControllerUser controllerUser;
-
 	private BufferedReader in;
 	private PrintWriter out;
 	private IntegerProperty port = new SimpleIntegerProperty(22222);
@@ -74,6 +82,10 @@ public class MainScreenController implements Runnable {
 	public void setStage(ControllerUser controllerUser, Stage primaryStage) {
 		this.controllerUser = controllerUser;
 		this.primaryStage = primaryStage;
+		primaryStage.setOnCloseRequest(value->{
+			Platform.exit();
+			System.exit(0);
+		});
 		myNick.setText(controllerUser.getLocaluser());
 		myNick.setVisible(true);
 	};
@@ -81,7 +93,10 @@ public class MainScreenController implements Runnable {
 	public enum Turn {
 		MyTurn, OpponentTurn, None
 	}
-
+  /**
+   * Metoda ustawiajaca widocznosc elementów informujacych graczy czyja kolej 
+   * @param turn - wartosc klasy wyliczeniowej Turn
+   */
 	private void displayTurn(Turn turn) {
 		switch (turn) {
 		case MyTurn:
@@ -105,6 +120,9 @@ public class MainScreenController implements Runnable {
 		}
 	}
 
+	/**
+	 * Metoda tworzaca plansze do gry oraz ustawiajaca na niej pionki
+	 */
 	private void createContent() {
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
@@ -124,11 +142,24 @@ public class MainScreenController implements Runnable {
 		}
 	}
 
+	/**
+	 * Metoda przeliczajca wspó³rzedne okna na wspo³rzedne planszy
+	 * @param pixel - wspolrzedna okna
+	 * @return wspolrzedna bedaca po³ozeniem pionka na planszy
+	 */
 	private int toBoard(double pixel) {
 		int a = (int) (pixel + Tile.getTileSize() / 2) / Tile.getTileSize();
 		return a;
 	}
 
+	/**
+	 * Metoda wysy³aj¹ca wiadomosc do serwera po przeciagnieciu pionka badz tez anulujaca ruch pionka
+	 * @param type - typ pionka
+	 * @param x -  wspolrzedna X pionka
+	 * @param y - wspolrzedna Y pionka
+	 * @param isQueen - parametr mowiacy o tym czy pionek jest damka
+	 * @return metoda zwraca opbiekt klasy Piece reprezentujacy pionek
+	 */
 	public Piece movePiece(PieceType type, int x, int y, boolean isQueen) {
 		Piece piece = new Piece(type, x, y, isQueen);
 		piece.setOnMouseReleased(e -> {
@@ -143,6 +174,10 @@ public class MainScreenController implements Runnable {
 		return piece;
 	}
 
+	/**
+	 * Metoda odswiezajaca plansze po ruchu
+	 * @param s - string z stanem gry
+	 */
 	private void repaint(String s) {
 		if (s.length() == 64) {
 			pieceGroup.getChildren().remove(0, pieceGroup.getChildren().size());
@@ -177,6 +212,19 @@ public class MainScreenController implements Runnable {
 		}
 	}
 
+	/**
+	 * Metoda ktora w zaleznosci od poczatku odebranej wiadomosci:
+	 * -"WELCOME"- ustawia typ pionków dla gracza
+	 * - MESSAGE Waiting ...- ustawia komentarz oczekiwania na przeciwnika
+	 * - OPPONENTNICK-ustawia nick przeciwnika na i wyswietla go na planszy
+	 * - MSG Your move- albo MSG Opponent move- wyswietla elementy informujaca o kolejnosci ruchow
+	 * -MOREKILL - informuje gracza o dalszym przymusowym biciu
+	 * -VALIDMOVE- informuje o poprawnosci ruchu i zmienia elementy t³a
+	 * -INVALIDMOVE - informuje o b³êdnym ruchu 
+	 * -OPPONENTMOVE- odswieza plansze po ruchu przeciwnika
+	 * -VICTORY,DEFEAT,TIE-ustawia odpowiedni komunikat i wylacza elenenty informujace o kolejce gracza
+	 * @throws IOException
+	 */
 	public void play() throws IOException {
 		String response;
 		try {
@@ -242,10 +290,15 @@ public class MainScreenController implements Runnable {
 			e.printStackTrace();
 		}
 
-		// finally {
-		// socket.close();
-		// }
+//		 finally {
+//		 socket.close();
+//		 }
 	}
+	
+	/**
+	 * Metoda ustawiajaca okreslony text w LabelGamemssgs
+	 * @param msg - teks do wyswietlenia 
+	 */
 	private void showMsg(String msg) {
 		javafx.application.Platform.runLater(new Runnable() {
 			@Override
@@ -255,6 +308,10 @@ public class MainScreenController implements Runnable {
 		});
 	}
 
+	/**
+	 * Metoda wywo³ujaca metode repaint z odpowiednim stringiem
+	 * @param msg - string z aktualnum stanem gry
+	 */
 	private void showMove(String msg) {
 		javafx.application.Platform.runLater(new Runnable() {
 			@Override
@@ -263,6 +320,12 @@ public class MainScreenController implements Runnable {
 			}
 		});
 	}
+	
+	/**
+	 * Metoda tworzaca po³¹czenie z serwerem ustawiajaca strumienie wymiany danych
+	 * tworzaca i uruchamiajaca watek thread
+	 * @throws InterruptedException
+	 */
 	private void connect() throws InterruptedException {
 		try {
 			socket = new Socket(ip, port.intValue());
@@ -277,17 +340,27 @@ public class MainScreenController implements Runnable {
 
 	@FXML
 	private void initialize() throws Exception {
+		
 		createContent();
 		gamePool.getChildren().addAll(tileGroup, pieceGroup, label);
 		displayTurn(Turn.None);
 		connect();
 	}
+	public final void setOnCloseRequest(EventHandler<WindowEvent> value) {
+		
+	}
 
+	/**
+	 * Metoda zamyka program
+	 */
 	@FXML
 	void closeApplication() {
 		Platform.exit();
 		System.exit(0);
 	}
+	/**
+	 * Ustawia arkusz stylów na classic.css
+	 */
 	@FXML
 	void setClassic() {
 		Stage stage = (Stage) borderPane.getScene().getWindow();
@@ -295,6 +368,9 @@ public class MainScreenController implements Runnable {
 		stage.getScene().getStylesheets().add(getClass().getResource("classic.css").toExternalForm());
 	}
 
+	/**
+	 * Ustawia arkusz stylów na modern.css
+	 */
 	@FXML
 	void setModern() {
 		Stage stage = (Stage) borderPane.getScene().getWindow();
@@ -302,6 +378,10 @@ public class MainScreenController implements Runnable {
 		stage.getScene().getStylesheets().add(getClass().getResource("modern.css").toExternalForm());
 	}
 
+	/**
+	 * Motoda ustawia okno zawsze na wierzchu lub wy³¹cza t¹ opcje
+	 * @param event - event checkBoxa
+	 */
 	@FXML
 	void setOnTop(ActionEvent event) {
 		Stage stage = (Stage) borderPane.getScene().getWindow();
@@ -319,7 +399,7 @@ public class MainScreenController implements Runnable {
 		while (true) {
 			try {
 				play();
-				// Toolkit.getDefaultToolkit().sync();
+				 //Toolkit.getDefaultToolkit().sync();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
