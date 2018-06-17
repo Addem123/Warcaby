@@ -16,7 +16,7 @@
 <?import javafx.scene.shape.Ellipse?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" nodeOrientation="LEFT_TO_RIGHT" prefHeight="650.0" prefWidth="760.0" stylesheets="@../controller/modern.css" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainScreenController">
+<BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" nodeOrientation="LEFT_TO_RIGHT" prefHeight="650.0" prefWidth="760.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainScreenController">
    <center>
       <Pane fx:id="gamePool" maxHeight="560.0" maxWidth="560.0" prefHeight="531.0" prefWidth="555.0" BorderPane.alignment="TOP_CENTER">
          <opaqueInsets>

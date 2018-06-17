@@ -25,6 +25,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import model.Dialog;
 import model.Piece;
 import model.PieceType;
 import model.Tile;
@@ -32,7 +33,6 @@ import model.Tile;
 /**
  * Klasa controlera glownago ekranu programu
  * @author £ukasz Makowski
- *
  */
 public class MainScreenController implements Runnable {
 
@@ -389,9 +389,12 @@ public class MainScreenController implements Runnable {
 		stage.setAlwaysOnTop(value);
 	}
 
+	/**
+	 * Metoda wyswietka okno w trybie komunikatu z zasadani gry
+	 */
 	@FXML
 	void about() {
-
+          Dialog.infoDialog();
 	}
 
 	@Override
