@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Ellipse?>
+<?import javafx.scene.text.Font?>
+
+<HBox maxHeight="560.0" maxWidth="800.0" minWidth="800.0" prefHeight="560.0" prefWidth="0.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.GameScreenController">
+   <children>
+      <VBox id="vbox" alignment="CENTER" maxWidth="120.0" minWidth="120.0" prefHeight="100.0">
+         <children>
+            <Label fx:id="myTurn" text="My Turn">
+               <font>
+                  <Font name="System Bold" size="15.0" />
+               </font>
+            </Label>
+            <Ellipse fx:id="myElipse" fill="DODGERBLUE" radiusX="22.75" radiusY="18.2" stroke="BLACK" strokeType="INSIDE" strokeWidth="2.0" />
+            <VBox alignment="CENTER" spacing="10.0">
+               <children>
+                  <Label text="My Nick:">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="myNick">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children>
+               <VBox.margin>
+                  <Insets top="200.0" />
+               </VBox.margin>
+            </VBox>
+         </children>
+         <padding>
+            <Insets left="10.0" right="10.0" />
+         </padding>
+      </VBox>
+      <Pane fx:id="gamePool" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="560.0" prefWidth="560.0" />
+      <VBox alignment="CENTER" maxWidth="120.0" minWidth="120.0" prefHeight="100.0">
+         <children>
+            <VBox alignment="CENTER" spacing="10.0">
+               <children>
+                  <Label text="Enemy Nick:">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="enemyNick">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="200.0" />
+               </VBox.margin>
+            </VBox>
+            <Label fx:id="oppTurn" prefHeight="21.0" prefWidth="108.0" text="Enemy Turn">
+               <font>
+                  <Font name="System Bold" size="15.0" />
+               </font>
+            </Label>
+            <Ellipse fx:id="oppElipse" fill="DODGERBLUE" radiusX="22.75" radiusY="18.2" stroke="BLACK" strokeType="INSIDE" strokeWidth="2.0" />
+         </children>
+         <padding>
+            <Insets left="10.0" right="10.0" />
+         </padding>
+      </VBox>
+   </children>
+   <padding>
+      <Insets top="20.0" />
+   </padding>
+</HBox>

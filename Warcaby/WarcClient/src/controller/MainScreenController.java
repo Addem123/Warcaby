@@ -11,20 +11,25 @@ import com.sun.javafx.tk.Toolkit;
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
-import javafx.scene.control.Button;
+import javafx.scene.Scene;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.MenuItem;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import model.Data;
 import model.Dialog;
 import model.Piece;
 import model.PieceType;
@@ -32,9 +37,15 @@ import model.Tile;
 
 /**
  * Klasa controlera glownago ekranu programu
+ * 
  * @author £ukasz Makowski
  */
 public class MainScreenController implements Runnable {
+	private ObservableList<Data> results = FXCollections.observableArrayList();
+
+	public ObservableList<Data> getResults() {
+		return results;
+	}
 
 	private Stage primaryStage;
 	ControllerUser controllerUser;
@@ -46,6 +57,7 @@ public class MainScreenController implements Runnable {
 
 	private boolean yourTurn = false;
 	private boolean accepted = false;
+	//private boolean connected = false;
 
 	private String ip = "localhost";
 	private String waitingString = "Oczekiwanie na drugiego gracza";
@@ -54,7 +66,6 @@ public class MainScreenController implements Runnable {
 	private String tieString = "Gra zakoñczona remisem";
 	private char playerType;
 
-	private Label label = new Label();
 	private Tile[][] tileMatrix = new Tile[8][8];
 	Group tileGroup = new Group();
 	Group pieceGroup = new Group();
@@ -74,15 +85,29 @@ public class MainScreenController implements Runnable {
 	private Ellipse oppElipse;
 	@FXML
 	private Label myNick;
+
+	public Label getMyNick() {
+		return myNick;
+	}
+
 	@FXML
 	private Label enemyNick;
 	@FXML
 	private Label LabelGamemssgs;
+	@FXML
+	private MenuItem myGames;
 
 	public void setStage(ControllerUser controllerUser, Stage primaryStage) {
 		this.controllerUser = controllerUser;
 		this.primaryStage = primaryStage;
-		primaryStage.setOnCloseRequest(value->{
+		primaryStage.setOnCloseRequest(value -> {
+//			if (connected)
+//				try {
+//					out.println("QUIT");
+//					socket.close();
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
 			Platform.exit();
 			System.exit(0);
 		});
@@ -93,10 +118,13 @@ public class MainScreenController implements Runnable {
 	public enum Turn {
 		MyTurn, OpponentTurn, None
 	}
-  /**
-   * Metoda ustawiajaca widocznosc elementów informujacych graczy czyja kolej 
-   * @param turn - wartosc klasy wyliczeniowej Turn
-   */
+
+	/**
+	 * Metoda ustawiajaca widocznosc elementów informujacych graczy czyja kolej
+	 * 
+	 * @param turn
+	 *            - wartosc klasy wyliczeniowej Turn
+	 */
 	private void displayTurn(Turn turn) {
 		switch (turn) {
 		case MyTurn:
@@ -104,18 +132,21 @@ public class MainScreenController implements Runnable {
 			myTurn.setVisible(true);
 			oppElipse.setVisible(false);
 			oppTurn.setVisible(false);
+			myGames.setDisable(true);
 			break;
 		case OpponentTurn:
 			myElipse.setVisible(false);
 			myTurn.setVisible(false);
 			oppElipse.setVisible(true);
 			oppTurn.setVisible(true);
+			myGames.setDisable(false);
 			break;
 		case None:
 			myElipse.setVisible(false);
 			myTurn.setVisible(false);
 			oppElipse.setVisible(false);
 			oppTurn.setVisible(false);
+			myGames.setDisable(false);
 			break;
 		}
 	}
@@ -144,7 +175,9 @@ public class MainScreenController implements Runnable {
 
 	/**
 	 * Metoda przeliczajca wspó³rzedne okna na wspo³rzedne planszy
-	 * @param pixel - wspolrzedna okna
+	 * 
+	 * @param pixel
+	 *            - wspolrzedna okna
 	 * @return wspolrzedna bedaca po³ozeniem pionka na planszy
 	 */
 	private int toBoard(double pixel) {
@@ -153,11 +186,17 @@ public class MainScreenController implements Runnable {
 	}
 
 	/**
-	 * Metoda wysy³aj¹ca wiadomosc do serwera po przeciagnieciu pionka badz tez anulujaca ruch pionka
-	 * @param type - typ pionka
-	 * @param x -  wspolrzedna X pionka
-	 * @param y - wspolrzedna Y pionka
-	 * @param isQueen - parametr mowiacy o tym czy pionek jest damka
+	 * Metoda wysy³aj¹ca wiadomosc do serwera po przeciagnieciu pionka badz tez
+	 * anulujaca ruch pionka
+	 * 
+	 * @param type
+	 *            - typ pionka
+	 * @param x
+	 *            - wspolrzedna X pionka
+	 * @param y
+	 *            - wspolrzedna Y pionka
+	 * @param isQueen
+	 *            - parametr mowiacy o tym czy pionek jest damka
 	 * @return metoda zwraca opbiekt klasy Piece reprezentujacy pionek
 	 */
 	public Piece movePiece(PieceType type, int x, int y, boolean isQueen) {
@@ -176,53 +215,53 @@ public class MainScreenController implements Runnable {
 
 	/**
 	 * Metoda odswiezajaca plansze po ruchu
-	 * @param s - string z stanem gry
+	 * 
+	 * @param s
+	 *            - string z stanem gry
 	 */
 	private void repaint(String s) {
-		if (s.length() == 64) {
-			pieceGroup.getChildren().remove(0, pieceGroup.getChildren().size());
-			for (int y = 0; y < 8; y++) {
-				for (int x = 0; x < 8; x++) {
-					Tile tile = tileMatrix[x][y];
-					Piece piece = null;
-					if (s.charAt(x + y * 8) == '1') {
-						piece = movePiece(PieceType.WHITE, x, y, false);
-						tile.setPiece(piece);
-					}
-					if (s.charAt(x + y * 8) == '2') {
-						piece = movePiece(PieceType.WHITE, x, y, true);
-						tile.setPiece(piece);
-					}
-					if (s.charAt(x + y * 8) == '3') {
-						piece = movePiece(PieceType.RED, x, y, false);
-						tile.setPiece(piece);
-					}
-					if (s.charAt(x + y * 8) == '4') {
-						piece = movePiece(PieceType.RED, x, y, true);
-						tile.setPiece(piece);
-					}
-					if (s.charAt(x + y * 8) == '0')
-						tile.setPiece(null);
+		pieceGroup.getChildren().remove(0, pieceGroup.getChildren().size());
+		for (int y = 0; y < 8; y++) {
+			for (int x = 0; x < 8; x++) {
+				Tile tile = tileMatrix[x][y];
+				Piece piece = null;
+				if (s.charAt(x + y * 8) == '1') {
+					piece = movePiece(PieceType.WHITE, x, y, false);
+					tile.setPiece(piece);
+				}
+				if (s.charAt(x + y * 8) == '2') {
+					piece = movePiece(PieceType.WHITE, x, y, true);
+					tile.setPiece(piece);
+				}
+				if (s.charAt(x + y * 8) == '3') {
+					piece = movePiece(PieceType.RED, x, y, false);
+					tile.setPiece(piece);
+				}
+				if (s.charAt(x + y * 8) == '4') {
+					piece = movePiece(PieceType.RED, x, y, true);
+					tile.setPiece(piece);
+				}
+				if (s.charAt(x + y * 8) == '0')
+					tile.setPiece(null);
 
-					if (piece != null) {
-						pieceGroup.getChildren().add(piece);
-					}
+				if (piece != null) {
+					pieceGroup.getChildren().add(piece);
 				}
 			}
 		}
 	}
 
 	/**
-	 * Metoda ktora w zaleznosci od poczatku odebranej wiadomosci:
-	 * -"WELCOME"- ustawia typ pionków dla gracza
-	 * - MESSAGE Waiting ...- ustawia komentarz oczekiwania na przeciwnika
-	 * - OPPONENTNICK-ustawia nick przeciwnika na i wyswietla go na planszy
-	 * - MSG Your move- albo MSG Opponent move- wyswietla elementy informujaca o kolejnosci ruchow
-	 * -MOREKILL - informuje gracza o dalszym przymusowym biciu
-	 * -VALIDMOVE- informuje o poprawnosci ruchu i zmienia elementy t³a
-	 * -INVALIDMOVE - informuje o b³êdnym ruchu 
-	 * -OPPONENTMOVE- odswieza plansze po ruchu przeciwnika
-	 * -VICTORY,DEFEAT,TIE-ustawia odpowiedni komunikat i wylacza elenenty informujace o kolejce gracza
+	 * Metoda ktora w zaleznosci od poczatku odebranej wiadomosci: -"WELCOME"-
+	 * ustawia typ pionków dla gracza - MESSAGE Waiting ...- ustawia komentarz
+	 * oczekiwania na przeciwnika - OPPONENTNICK-ustawia nick przeciwnika na i
+	 * wyswietla go na planszy - MSG Your move- albo MSG Opponent move- wyswietla
+	 * elementy informujaca o kolejnosci ruchow -MOREKILL - informuje gracza o
+	 * dalszym przymusowym biciu -VALIDMOVE- informuje o poprawnosci ruchu i zmienia
+	 * elementy t³a -INVALIDMOVE - informuje o b³êdnym ruchu -OPPONENTMOVE- odswieza
+	 * plansze po ruchu przeciwnika -VICTORY,DEFEAT,TIE-ustawia odpowiedni komunikat
+	 * i wylacza elenenty informujace o kolejce gracza
+	 * 
 	 * @throws IOException
 	 */
 	public void play() throws IOException {
@@ -231,6 +270,7 @@ public class MainScreenController implements Runnable {
 			response = in.readLine();
 			if (response.startsWith("WELCOME")) {
 				playerType = response.charAt(8);
+				//connected = true;
 			} else if (response.startsWith("MESSAGE Waiting for opponent to connect")) {
 				showMsg(waitingString);
 			} else if (response.startsWith("OPPONNENTNICK")) {
@@ -242,12 +282,7 @@ public class MainScreenController implements Runnable {
 					}
 				});
 			} else if (response.startsWith("MESSAGE All players connected")) {
-				javafx.application.Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						out.println("NICK" + playerType + myNick.getText());
-					}
-				});	
+				out.println("NICK" + playerType + myNick.getText());
 				accepted = true;
 				showMsg("Gramy!");
 			} else if (response.startsWith("MSG Your move")) {
@@ -281,23 +316,36 @@ public class MainScreenController implements Runnable {
 				displayTurn(Turn.None);
 			} else if (response.startsWith("INVALID_MOVE")) {
 				showMove(response.substring(12));
+			} else if (response.startsWith("DATA")) {
+				results.add(addToResults(response.substring(4)));
 			}
-			// out.println("QUIT");
-		}
-
-		catch (Exception e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-//		 finally {
-//		 socket.close();
-//		 }
 	}
-	
+
+	public Data addToResults(String s) {
+		int i = 0, j = 0;
+		String whitePlayer = null, redPlayer = null, gameStatus = null, winner = null;
+		for (int k = 1; k <= 3; k++) {
+			i = s.indexOf(",", i + 1);
+			if (k == 1)
+				whitePlayer = s.substring(j, i);
+			if (k == 2)
+				redPlayer = s.substring(j + 1, i);
+			if (k == 3)
+				gameStatus = s.substring(j + 1, i);
+			j = i;
+		}
+		winner = s.substring(j + 1);
+		return new Data(whitePlayer, redPlayer, gameStatus, winner);
+	}
+
 	/**
 	 * Metoda ustawiajaca okreslony text w LabelGamemssgs
-	 * @param msg - teks do wyswietlenia 
+	 * 
+	 * @param msg
+	 *            - teks do wyswietlenia
 	 */
 	private void showMsg(String msg) {
 		javafx.application.Platform.runLater(new Runnable() {
@@ -310,7 +358,9 @@ public class MainScreenController implements Runnable {
 
 	/**
 	 * Metoda wywo³ujaca metode repaint z odpowiednim stringiem
-	 * @param msg - string z aktualnum stanem gry
+	 * 
+	 * @param msg
+	 *            - string z aktualnum stanem gry
 	 */
 	private void showMove(String msg) {
 		javafx.application.Platform.runLater(new Runnable() {
@@ -320,10 +370,11 @@ public class MainScreenController implements Runnable {
 			}
 		});
 	}
-	
+
 	/**
 	 * Metoda tworzaca po³¹czenie z serwerem ustawiajaca strumienie wymiany danych
 	 * tworzaca i uruchamiajaca watek thread
+	 * 
 	 * @throws InterruptedException
 	 */
 	private void connect() throws InterruptedException {
@@ -332,22 +383,18 @@ public class MainScreenController implements Runnable {
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out = new PrintWriter(socket.getOutputStream(), true);
 			thread = new Thread(this, "MainScreenController");
+			thread.setDaemon(true);
 			thread.start();
-			//thread.join();
 		} catch (IOException e) {
 		}
 	}
 
 	@FXML
 	private void initialize() throws Exception {
-		
 		createContent();
-		gamePool.getChildren().addAll(tileGroup, pieceGroup, label);
+		gamePool.getChildren().addAll(tileGroup, pieceGroup);
 		displayTurn(Turn.None);
 		connect();
-	}
-	public final void setOnCloseRequest(EventHandler<WindowEvent> value) {
-		
 	}
 
 	/**
@@ -355,9 +402,18 @@ public class MainScreenController implements Runnable {
 	 */
 	@FXML
 	void closeApplication() {
+		//if (connected)
+//			try {
+//				out.println("QUIT");
+//				socket.close();
+//
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
 		Platform.exit();
 		System.exit(0);
 	}
+
 	/**
 	 * Ustawia arkusz stylów na classic.css
 	 */
@@ -380,7 +436,9 @@ public class MainScreenController implements Runnable {
 
 	/**
 	 * Motoda ustawia okno zawsze na wierzchu lub wy³¹cza t¹ opcje
-	 * @param event - event checkBoxa
+	 * 
+	 * @param event
+	 *            - event checkBoxa
 	 */
 	@FXML
 	void setOnTop(ActionEvent event) {
@@ -394,7 +452,33 @@ public class MainScreenController implements Runnable {
 	 */
 	@FXML
 	void about() {
-          Dialog.infoDialog();
+		Dialog.infoDialog();
+	}
+
+	@FXML
+	void openMyGames(ActionEvent event) {
+		results.clear();
+		out.println("DATA");
+		try {
+			FXMLLoader loader = new FXMLLoader(Main.class.getResource("/view/MyGames.fxml"));
+			Pane gamePane = loader.load();
+			Stage gameWindowStage = new Stage();
+			gameWindowStage.setTitle("Moje Gry");
+			gameWindowStage.initModality(Modality.WINDOW_MODAL);
+			gameWindowStage.initOwner(primaryStage);
+			gameWindowStage.setMinWidth(500.0);
+			gameWindowStage.setMinHeight(500.0);
+			Scene scene = new Scene(gamePane);
+			gameWindowStage.setScene(scene);
+			GameScreenController gsc = loader.getController();
+			gsc.setMyGameStage(gameWindowStage);
+			gsc.setMainScreenController(this);
+			gameWindowStage.showAndWait();
+			System.out.print(results.size());
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -402,7 +486,6 @@ public class MainScreenController implements Runnable {
 		while (true) {
 			try {
 				play();
-				 //Toolkit.getDefaultToolkit().sync();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

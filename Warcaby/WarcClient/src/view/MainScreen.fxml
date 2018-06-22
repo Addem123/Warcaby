@@ -49,14 +49,23 @@
                   <Font name="System Bold" size="15.0" />
                </font></Label>
             <Ellipse fx:id="myElipse" fill="DODGERBLUE" radiusX="22.75" radiusY="18.2" stroke="BLACK" strokeType="INSIDE" strokeWidth="2.0" />
-            <Label fx:id="myNick" alignment="CENTER" prefHeight="100.0" prefWidth="60.0" textOverrun="CENTER_ELLIPSIS" translateY="150.0" visible="false" wrapText="true">
+            <VBox alignment="CENTER" spacing="10.0">
                <VBox.margin>
-                  <Insets />
+                  <Insets top="200.0" />
                </VBox.margin>
-               <font>
-                  <Font name="System Bold" size="15.0" />
-               </font>
-            </Label>
+               <children>
+                  <Label text="My Nick">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="myNick">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+               </children>
+            </VBox>
          </children>
          <padding>
             <Insets left="10.0" right="10.0" />
@@ -69,14 +78,23 @@
    <right>
       <VBox alignment="CENTER" maxWidth="110.0" prefHeight="100.0" BorderPane.alignment="CENTER">
          <children>
-            <Label fx:id="enemyNick" alignment="CENTER" prefHeight="100.0" prefWidth="60.0" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" translateY="-150.0" visible="false" wrapText="true">
-               <font>
-                  <Font name="System Bold" size="15.0" />
-               </font>
+            <VBox alignment="CENTER" spacing="10.0">
+               <children>
+                  <Label text="Enemy Nick">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="enemyNick">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+               </children>
                <VBox.margin>
-                  <Insets />
+                  <Insets bottom="200.0" />
                </VBox.margin>
-            </Label>
+            </VBox>
             <Label fx:id="oppTurn" prefHeight="21.0" prefWidth="108.0" text="Enemy Turn">
                <font>
                   <Font name="System Bold" size="15.0" />
@@ -99,6 +117,11 @@
               <MenuItem mnemonicParsing="false" onAction="#closeApplication" text="Close" />
             </items>
           </Menu>
+            <Menu mnemonicParsing="false" text="MyGames">
+               <items>
+                  <MenuItem fx:id="myGames" mnemonicParsing="false" onAction="#openMyGames" text="Show my games" />
+               </items>
+            </Menu>
           <Menu mnemonicParsing="false" text="Edit">
                <items>
                   <RadioMenuItem mnemonicParsing="false" onAction="#setClassic" selected="true" text="Classic">

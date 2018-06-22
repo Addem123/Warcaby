@@ -50,12 +50,10 @@ public class Piece extends StackPane {
 		this.setOnMousePressed(e->{
 			mouseX=e.getSceneX();
 			mouseY=e.getSceneY();
-			//System.out.println("Mouse "+mouseX+" "+mouseY);
 			
 		});
 		this.setOnMouseDragged(e->{
 			relocate(e.getSceneX()-mouseX+oldX,e.getSceneY()-mouseY+oldY);
-			//System.out.println(e.getSceneX()+" "+e.getSceneY());
 		});
 	}
 	public boolean isQueen() {
