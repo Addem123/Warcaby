@@ -6,8 +6,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-import com.sun.javafx.tk.Toolkit;
-
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -58,7 +56,7 @@ public class MainScreenController implements Runnable {
 	private boolean yourTurn = false;
 	private boolean accepted = false;
 
-	private String ip = "localhost";
+	private String ip;
 	private String waitingString = "Oczekiwanie na drugiego gracza";
 	private String wonString = "Wygra³eœ";
 	private String enemyWonString = "Przeciwnik wygra³";
@@ -96,16 +94,19 @@ public class MainScreenController implements Runnable {
 	@FXML
 	private MenuItem myGames;
 
-	public void setStage(ControllerUser controllerUser, Stage primaryStage) {
+	public void setStage(ControllerUser controllerUser, Stage primaryStage) throws InterruptedException {
 		this.controllerUser = controllerUser;
 		this.primaryStage = primaryStage;
 		this.primaryStage.setResizable(false);
+		ip = controllerUser.getIp();
+		connect();
 		primaryStage.setOnCloseRequest(value -> {
 			Platform.exit();
 			System.exit(0);
 		});
 		myNick.setText(controllerUser.getLocaluser());
 		myNick.setVisible(true);
+		
 	};
 
 	public enum Turn {
@@ -391,7 +392,7 @@ public class MainScreenController implements Runnable {
 		createContent();
 		gamePool.getChildren().addAll(tileGroup, pieceGroup);
 		displayTurn(Turn.None);
-		connect();
+		
 	}
 
 	/**

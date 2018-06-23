@@ -14,7 +14,8 @@ import javafx.stage.Stage;
 public class ControllerUser {
 	private Main main;
 	private Stage primaryStage;
-	public String localuser;
+	private String localuser;
+	private String ip;
 
 	public void setMain(Main main, Stage primaryStage) {
 		this.main = main;
@@ -32,15 +33,26 @@ public class ControllerUser {
 	Button buttonGraj;
 	@FXML
 	Label wpiszNick;
+	@FXML
+	Label wpiszip;
+	@FXML
+	TextField ipField;
 
 	@FXML
-	void graj() {
+	void graj() throws InterruptedException {
+
+		wpiszNick.setVisible(false);
+		wpiszip.setVisible(false);
 		
 		if(textFieldNick.getText().equals("")) 
 			{wpiszNick.setVisible(true);}
+		
+		if (ipField.getText().equals("")) 
+		{wpiszip.setVisible(true);}
 			
 		else {
 		localuser = textFieldNick.getText();
+		ip = ipField.getText();
 		// System.out.println(localuser);
 
 		try {
@@ -53,11 +65,13 @@ public class ControllerUser {
 			testStage.setTitle("Checkers");
 			testStage.initModality(Modality.WINDOW_MODAL);
 			testStage.initOwner(primaryStage);
+
 			Scene scene = new Scene(pane);
 			testStage.setScene(scene);
+
 			MainScreenController mainScreenController = loader.getController();
 			mainScreenController.setStage(this, testStage);
-			primaryStage.setResizable(false);;
+
 			primaryStage.close();
 			testStage.showAndWait();
 
@@ -73,6 +87,11 @@ public class ControllerUser {
 
 	public void setLocaluser(String localuser) {
 		this.localuser = localuser;
+	}
+
+	public String getIp() {
+		// TODO Auto-generated method stub
+		return ip;
 	}
 
 }
