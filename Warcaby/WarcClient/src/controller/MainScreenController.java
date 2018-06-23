@@ -57,7 +57,6 @@ public class MainScreenController implements Runnable {
 
 	private boolean yourTurn = false;
 	private boolean accepted = false;
-	private boolean connected = false;
 
 	private String ip = "localhost";
 	private String waitingString = "Oczekiwanie na drugiego gracza";
@@ -126,14 +125,12 @@ public class MainScreenController implements Runnable {
 			myTurn.setVisible(true);
 			oppElipse.setVisible(false);
 			oppTurn.setVisible(false);
-			myGames.setDisable(false);
 			break;
 		case OpponentTurn:
 			myElipse.setVisible(false);
 			myTurn.setVisible(false);
 			oppElipse.setVisible(true);
 			oppTurn.setVisible(true);
-			myGames.setDisable(false);
 			break;
 		case None:
 			myElipse.setVisible(false);
@@ -384,7 +381,7 @@ public class MainScreenController implements Runnable {
 			thread = new Thread(this, "MainScreenController");
 			thread.setDaemon(true);
 			thread.start();
-			connected=true;
+			myGames.setDisable(false);
 		} catch (IOException e) {
 		}
 	}
@@ -446,9 +443,12 @@ public class MainScreenController implements Runnable {
 	void about() {
 		Dialog.infoDialog();
 	}
-
+    
+	/**
+	 * Metoda otwieraj¹ca okno z mozliwoscia obejrzenia rankingu oraz gier uzytkownika
+	 */
 	@FXML
-	void openMyGames(ActionEvent event) {
+	void openMyGames() {
 		if(accepted) {
 		results.clear();
 		out.println("DATA");

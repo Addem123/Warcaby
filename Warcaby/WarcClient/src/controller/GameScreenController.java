@@ -6,6 +6,7 @@ import java.util.HashMap;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -62,6 +63,7 @@ public class GameScreenController {
 		wins.setCellValueFactory(new PropertyValueFactory<Data, Integer>("wins"));
 		defeats.setCellValueFactory(new PropertyValueFactory<Data, Integer>("defeats"));
 		ties.setCellValueFactory(new PropertyValueFactory<Data, Integer>("ties"));
+		resultsTable.setPlaceholder(new Label(""));
 	}
 
 	@FXML
@@ -86,6 +88,8 @@ public class GameScreenController {
 				gamesList.add(action);
 			}
 		});
+		if(gamesList.size()==0)
+			 resultsTable.setPlaceholder(new Label("Nie przeprowadzi³es jeszcze zadnej gry"));
 		resultsTable.setItems(gamesList);
 		redPlayer.setVisible(true);
 		gameStatus.setVisible(true);
