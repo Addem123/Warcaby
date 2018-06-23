@@ -53,13 +53,11 @@ public class ControllerUser {
 			testStage.setTitle("Checkers");
 			testStage.initModality(Modality.WINDOW_MODAL);
 			testStage.initOwner(primaryStage);
-
 			Scene scene = new Scene(pane);
 			testStage.setScene(scene);
-
 			MainScreenController mainScreenController = loader.getController();
 			mainScreenController.setStage(this, testStage);
-
+			primaryStage.setResizable(false);;
 			primaryStage.close();
 			testStage.showAndWait();
 

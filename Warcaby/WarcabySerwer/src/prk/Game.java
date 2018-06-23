@@ -3,18 +3,15 @@ package prk;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Scanner;
-
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 
 /**
  * Klasa reprezetujaca gre. Gra posiada dwoch graczy(whitePlayer,redPlayer),
@@ -43,14 +40,15 @@ class Game {
 		}
 	}
 
-	public synchronized void saveData() {
+	public synchronized void saveData() throws IOException {
 		PrintWriter out = null;
 		try {
 			File file = new File(dataFile);
 			if (file != null) {
-				out = new PrintWriter(file.getPath());
-				out.printf("%-10s%-10s%-10s%-10s %n", whitePlayer.get(), redPlayer.get(),
-						(won == true || tie == true) ? "Ended" : "notEnded", won == true ?currentPlayer:"---");
+				out = new PrintWriter(new FileWriter(file.getPath(),true));
+				out.printf("%-10s %-10s %-10s %-10s %n", whitePlayer.get(), redPlayer.get(),
+						(won == true || tie == true) ? "Ended" : "notEnded",
+						won == true ? currentPlayer.getMark() == 'W'?whitePlayer.get():redPlayer.get() : "---");
 			}
 		} catch (FileNotFoundException e) {
 		} finally {
@@ -93,8 +91,9 @@ class Game {
 	/**
 	 * Metoda sprawdzajaca czy obecny gracz nie wygra³ starcia lub go nie zremisowa³
 	 * jesli tak ustawia zmienne won lub tie na true
+	 * @throws IOException 
 	 */
-	private synchronized void checkWon() {
+	private synchronized void checkWon() throws IOException {
 		int yourMove = 0;
 		int oppMove = 0;
 		int yourPiece = 0;
@@ -208,7 +207,7 @@ class Game {
 	 * @return zwraca obiekt klasy MoveResult
 	 */
 	public synchronized MoveResult tryMove(int oldX, int oldY, int newX, int newY) {
-		
+
 		Piece piece = board[oldX][oldY];
 		if (newX >= 8 || newX < 0 || newY > 7 || newY < 0 || board[newX][newY] != null || (newX + newY) % 2 == 0
 				|| piece.getType() != currentPlayer.type)
@@ -225,8 +224,7 @@ class Game {
 					return new MoveResult(MoveType.KILL, board[x1][y1]);
 				}
 			}
-		}
-		else if (piece.isQueen()) {
+		} else if (piece.isQueen()) {
 			if (piece.getType() != currentPlayer.type || (Math.abs(newX - oldX) != Math.abs(newY - oldY))
 					|| (numberOfStrikes != 0 && checkQueenMove(oldX, oldY, newX, newY) == null))
 				return new MoveResult(MoveType.NONE);
@@ -259,7 +257,7 @@ class Game {
 				}
 			}
 		}
-		//System.out.println("Bic w liczbie: "+count);
+		// System.out.println("Bic w liczbie: "+count);
 		return count;
 	}
 
@@ -329,74 +327,71 @@ class Game {
 			else if (x + 2 <= 7 && y + 2 <= 7 && board[x + 1][y + 1] != null
 					&& board[x + 1][y + 1].getType() != piece.getType() && board[x + 2][y + 2] == null)
 				return true;
-		 } else if (piece.isQueen()) {
-			 
+		} else {
+			
 			if (x >= 2 && y >= 2) {
-				int a = 0;
-				x = piece.getOldX();
-				y = piece.getOldY();
+				int xi = piece.getOldX();
+				int yi = piece.getOldY();
 				while (x >= 2 && y >= 2) {
-					--x;
-					--y;
-					if (board[x][y] != null && (board[x][y].getType() == piece.getType()
-							|| (board[x][y].getType() != piece.getType() && board[x - 1][y - 1] != null)))
-						a++;
-					if (board[x][y] != null && board[x][y].getType() != piece.getType() && board[x - 1][y - 1] == null&&a==0) {
+					--xi;
+					--yi;
+					if (board[xi][yi] != null && (board[xi][yi].getType() == piece.getType()
+							|| (board[xi][yi].getType() != piece.getType() && board[xi - 1][yi - 1] != null)))
+						break;
+					if (board[xi][yi] != null && board[xi][yi].getType() != piece.getType()
+							&& board[xi - 1][yi - 1] == null) {
 						return true;
 					}
-						
+
 				}
 			}
 			if (x <= 5 && y >= 2) {
-				x = piece.getOldX();
-				y = piece.getOldY();
-				int a = 0;
-				while (x <= 5 && y >= 2) {
-					x++;
-					y--;
-					if (board[x][y] != null && (board[x][y].getType() == piece.getType()
-							|| (board[x][y].getType() != piece.getType() && board[x + 1][y - 1] != null)))
-						a++;
-					if (board[x][y] != null && board[x][y].getType() != piece.getType() && board[x + 1][y - 1] == null&&a==0) {
+				int xi = piece.getOldX();
+				int yi = piece.getOldY();
+				while (xi <= 5 && yi >= 2) {
+					xi++;
+					yi--;
+					if (board[xi][yi] != null && (board[xi][yi].getType() == piece.getType()
+							|| (board[xi][yi].getType() != piece.getType() && board[xi + 1][yi - 1] != null)))
+						break;
+					if (board[xi][yi] != null && board[xi][yi].getType() != piece.getType()
+							&& board[xi + 1][yi - 1] == null) {
 						return true;
 					}
 				}
 			}
 			if (x >= 2 && y <= 5) {
-				x = piece.getOldX();
-				y = piece.getOldY();
-				int a=0;
-				while (x >= 2 && y <= 5) {
-					x--;
-					y++;
-					if (board[x][y] != null && (board[x][y].getType() == piece.getType()
-							|| (board[x][y].getType() != piece.getType() && board[x - 1][y + 1] != null)))
-						a++;
-					if (board[x][y] != null && board[x][y].getType() != piece.getType() && board[x - 1][y + 1] == null&&a==0) {
-						//System.out.println("Bedzie bicie");
+				int xi = piece.getOldX();
+				int yi = piece.getOldY();
+				while (xi >= 2 && yi <= 5) {
+					xi--;
+					yi++;
+					if (board[xi][yi] != null && (board[xi][yi].getType() == piece.getType()
+							|| (board[xi][yi].getType() != piece.getType() && board[xi - 1][yi + 1] != null)))
+						break;
+					if (board[xi][yi] != null && board[xi][yi].getType() != piece.getType()
+							&& board[xi - 1][yi + 1] == null) {
 						return true;
 					}
 				}
 			}
-			if ((x <= 5 && y <= 5)) {
-				x = piece.getOldX();
-				y = piece.getOldY();
-				int a = 0;
-				while (x <= 5 && y <= 5) {
-					x++;
-					y++;
-					if (board[x][y] != null && (board[x][y].getType() == piece.getType()
-							|| (board[x][y].getType() != piece.getType() && board[x + 1][y + 1] != null)))
-						a++;
-					if (board[x][y] != null && board[x][y].getType() != piece.getType() && board[x + 1][y + 1] == null&&a==0) {
+			if (x <=5 && y <=5) {
+				int xi = piece.getOldX();
+				int yi = piece.getOldY();
+				while (xi <=5 && yi <=5) {
+					xi++;
+					yi++;
+					if (board[xi][yi] != null && (board[xi][yi].getType() == piece.getType()
+							|| (board[xi][yi].getType() != piece.getType() && board[xi + 1][yi + 1] != null)))
+						break;
+					if (board[xi][yi] != null && board[xi][yi].getType() != piece.getType()
+							&& board[xi + 1][yi + 1] == null) {
 						return true;
 					}
 				}
 			}
 
 		}
-		//System.out.println("Serwer strike: "+strike);
-		//System.out.println("================================ ");
 		return false;
 	}
 
@@ -404,11 +399,16 @@ class Game {
 	 * Klasa wewnetrzna reprezentujaca gracza. Gracz na swój typ(white,red),ma
 	 * opponenta, strumienie wymiany danych
 	 * 
-	 * @author 
+	 * @author
 	 *
 	 */
 	class Player extends Thread {
 		char mark;
+
+		public char getMark() {
+			return mark;
+		}
+
 		PieceType type;
 		Player opponent;
 		Socket socket;
@@ -437,6 +437,7 @@ class Game {
 				output = new PrintWriter(socket.getOutputStream(), true);
 				output.println("WELCOME " + mark);
 				output.println("MESSAGE Waiting for opponent to connect");
+				loadData();
 			} catch (IOException e) {
 				System.out.println("Player died: " + e);
 			}
@@ -449,14 +450,13 @@ class Game {
 				String whitePlayer, redPlayer, gameStatus, winner;
 				try {
 					in = new Scanner(Paths.get(file.getPath()));
-						while (in.hasNext()) {
-							whitePlayer = in.next();
-							redPlayer = in.next();
-							gameStatus = in.next();
-							winner = in.next();
-								output.println(
-										"DATA" + whitePlayer + "," + redPlayer + "," + gameStatus + "," + winner);
-						}
+					while (in.hasNext()) {
+						whitePlayer = in.next();
+						redPlayer = in.next();
+						gameStatus = in.next();
+						winner = in.next();
+						output.println("DATA" + whitePlayer + "," + redPlayer + "," + gameStatus + "," + winner);
+					}
 				} catch (IOException e) {
 				} finally {
 					if (in != null)
@@ -540,7 +540,7 @@ class Game {
 							board[otherPiece.getOldX()][otherPiece.getOldY()] = null;
 							changeType(newPiece);
 							queenMove = 0;
-							//System.out.println(pieceStrike(newPiece)+"=========================");
+							// System.out.println(pieceStrike(newPiece)+"=========================");
 							if (!pieceStrike(newPiece)) {
 								checkWon();
 								output.println("VALID_MOVE" + gameStatus());

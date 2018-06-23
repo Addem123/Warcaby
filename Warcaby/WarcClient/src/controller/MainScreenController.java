@@ -57,7 +57,7 @@ public class MainScreenController implements Runnable {
 
 	private boolean yourTurn = false;
 	private boolean accepted = false;
-	//private boolean connected = false;
+	private boolean connected = false;
 
 	private String ip = "localhost";
 	private String waitingString = "Oczekiwanie na drugiego gracza";
@@ -100,14 +100,8 @@ public class MainScreenController implements Runnable {
 	public void setStage(ControllerUser controllerUser, Stage primaryStage) {
 		this.controllerUser = controllerUser;
 		this.primaryStage = primaryStage;
+		this.primaryStage.setResizable(false);
 		primaryStage.setOnCloseRequest(value -> {
-//			if (connected)
-//				try {
-//					out.println("QUIT");
-//					socket.close();
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
 			Platform.exit();
 			System.exit(0);
 		});
@@ -132,7 +126,7 @@ public class MainScreenController implements Runnable {
 			myTurn.setVisible(true);
 			oppElipse.setVisible(false);
 			oppTurn.setVisible(false);
-			myGames.setDisable(true);
+			myGames.setDisable(false);
 			break;
 		case OpponentTurn:
 			myElipse.setVisible(false);
@@ -282,7 +276,12 @@ public class MainScreenController implements Runnable {
 					}
 				});
 			} else if (response.startsWith("MESSAGE All players connected")) {
-				out.println("NICK" + playerType + myNick.getText());
+				javafx.application.Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						out.println("NICK" + playerType + myNick.getText());
+					}
+				});
 				accepted = true;
 				showMsg("Gramy!");
 			} else if (response.startsWith("MSG Your move")) {
@@ -385,6 +384,7 @@ public class MainScreenController implements Runnable {
 			thread = new Thread(this, "MainScreenController");
 			thread.setDaemon(true);
 			thread.start();
+			connected=true;
 		} catch (IOException e) {
 		}
 	}
@@ -402,14 +402,6 @@ public class MainScreenController implements Runnable {
 	 */
 	@FXML
 	void closeApplication() {
-		//if (connected)
-//			try {
-//				out.println("QUIT");
-//				socket.close();
-//
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
 		Platform.exit();
 		System.exit(0);
 	}
@@ -457,8 +449,10 @@ public class MainScreenController implements Runnable {
 
 	@FXML
 	void openMyGames(ActionEvent event) {
+		if(accepted) {
 		results.clear();
 		out.println("DATA");
+		}
 		try {
 			FXMLLoader loader = new FXMLLoader(Main.class.getResource("/view/MyGames.fxml"));
 			Pane gamePane = loader.load();
@@ -474,8 +468,6 @@ public class MainScreenController implements Runnable {
 			gsc.setMyGameStage(gameWindowStage);
 			gsc.setMainScreenController(this);
 			gameWindowStage.showAndWait();
-			System.out.print(results.size());
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

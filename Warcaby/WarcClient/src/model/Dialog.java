@@ -30,7 +30,10 @@ public class Dialog {
 			"Damki mog¹ poruszaæ siê w jednym ruchu o dowoln¹ liczbê pól do przodu lub do ty³u po przek¹tnej, zatrzymuj¹c siê na wolnych polach.\r\n" + 
 			"\r\n" + 
 			"Bicie damk¹ jest mo¿liwe z dowolnej odleg³oœci po linii przek¹tnej i nastêpuje przez przeskoczenie pionu (lub damki) przeciwnika, "
-			+ "za którym musi znajdowaæ siê co najmniej jedno wolne pole -- damka przeskakuje na dowolne z tych pól i mo¿e kontynuowaæ bicie (na tej samej lub prostopad³ej linii).\r\n";
+			+ "za którym musi znajdowaæ siê co najmniej jedno wolne pole -- damka przeskakuje na dowolne z tych pól i mo¿e kontynuowaæ bicie (na tej samej lub prostopad³ej linii).\r\n"+
+			"\r\n" + 
+			"Aplikacja umozliwia przejrzenie swoich wszysktich odbytych gier a tak¿e tworzy ranking graczy."
+			+ "Za wygran¹ graczowi jest dopisywane 3 punkty a za remis 1  przegrana nie zmienia ilosci punktów. \r\n";
 	public static void infoDialog() {
 		Alert errorAlert= new Alert(Alert.AlertType.INFORMATION);
 		errorAlert.setTitle("ZASADY GRY");

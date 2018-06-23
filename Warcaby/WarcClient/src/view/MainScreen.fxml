@@ -117,9 +117,9 @@
               <MenuItem mnemonicParsing="false" onAction="#closeApplication" text="Close" />
             </items>
           </Menu>
-            <Menu mnemonicParsing="false" text="MyGames">
+            <Menu fx:id="myGames" disable="true" mnemonicParsing="false" text="MyGames">
                <items>
-                  <MenuItem fx:id="myGames" mnemonicParsing="false" onAction="#openMyGames" text="Show my games" />
+                  <MenuItem mnemonicParsing="false" onAction="#openMyGames" text="Show my games" />
                </items>
             </Menu>
           <Menu mnemonicParsing="false" text="Edit">
