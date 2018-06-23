@@ -12,11 +12,23 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class ControllerUser {
+	
 	private Main main;
 	private Stage primaryStage;
 	private String localuser;
 	private String ip;
 
+	@FXML
+	private Button buttonGraj;
+	@FXML
+	private Label wpiszNick;
+	@FXML
+	private Label wpiszip;
+	@FXML
+	private TextField ipField;
+	@FXML
+	private TextField textFieldNick;
+	
 	public void setMain(Main main, Stage primaryStage) {
 		this.main = main;
 		this.primaryStage = primaryStage;
@@ -27,19 +39,9 @@ public class ControllerUser {
 		primaryStage.close();
 	}
 
-	@FXML
-	TextField textFieldNick;
-	@FXML
-	Button buttonGraj;
-	@FXML
-	Label wpiszNick;
-	@FXML
-	Label wpiszip;
-	@FXML
-	TextField ipField;
 
 	@FXML
-	void graj() throws InterruptedException {
+	public void graj() throws InterruptedException {
 
 		wpiszNick.setVisible(false);
 		wpiszip.setVisible(false);
@@ -93,5 +95,14 @@ public class ControllerUser {
 		// TODO Auto-generated method stub
 		return ip;
 	}
+	
+	public TextField getTextFieldNick() {
+		return textFieldNick;
+	}
+	
+	public TextField getIpField() {
+		return ipField;
+	}
+
 
 }

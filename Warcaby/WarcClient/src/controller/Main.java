@@ -10,6 +10,8 @@ import javafx.scene.layout.AnchorPane;
 
 public class Main extends Application {
 	private Stage primaryStage;
+	private ControllerUser controllerUser;
+
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -24,7 +26,7 @@ public class Main extends Application {
 			primaryStage.setMinWidth(350.0);
 			primaryStage.setMinHeight(250.0);
 			Scene scene = new Scene(pane);
-			ControllerUser controllerUser = loader.getController();
+			controllerUser = loader.getController();
 			controllerUser.setMain(this, primaryStage);
 			primaryStage.setScene(scene);
 			primaryStage.show();
@@ -33,6 +35,10 @@ public class Main extends Application {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public ControllerUser getControllerUser() {
+		return controllerUser;
 	}
 
 	public static void main(String[] args) {
