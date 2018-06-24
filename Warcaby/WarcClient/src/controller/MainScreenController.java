@@ -48,6 +48,7 @@ public class MainScreenController implements Runnable {
 	private Stage primaryStage;
 	ControllerUser controllerUser;
 	private BufferedReader in;
+
 	private PrintWriter out;
 	private IntegerProperty port = new SimpleIntegerProperty(22222);
 	private Socket socket;
@@ -173,7 +174,9 @@ public class MainScreenController implements Runnable {
 	 * @return wspolrzedna bedaca po³ozeniem pionka na planszy
 	 */
 	private int toBoard(double pixel) {
+		System.out.println(pixel);
 		int a = (int) (pixel + Tile.getTileSize() / 2) / Tile.getTileSize();
+		System.out.println(a);
 		return a;
 	}
 
@@ -484,6 +487,14 @@ public class MainScreenController implements Runnable {
 			}
 
 		}
+	}
+	
+	public void setIn(BufferedReader in) {
+		this.in = in;
+	}
+	
+	public char getPlayerType() {
+		return playerType;
 	}
 
 }

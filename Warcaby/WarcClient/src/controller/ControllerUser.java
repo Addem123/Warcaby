@@ -29,6 +29,10 @@ public class ControllerUser {
 	@FXML
 	private TextField textFieldNick;
 	
+	MainScreenController mainScreenController;
+	
+
+
 	public void setMain(Main main, Stage primaryStage) {
 		this.main = main;
 		this.primaryStage = primaryStage;
@@ -71,7 +75,7 @@ public class ControllerUser {
 			Scene scene = new Scene(pane);
 			testStage.setScene(scene);
 
-			MainScreenController mainScreenController = loader.getController();
+			mainScreenController = loader.getController();
 			mainScreenController.setStage(this, testStage);
 
 			primaryStage.close();
@@ -102,6 +106,10 @@ public class ControllerUser {
 	
 	public TextField getIpField() {
 		return ipField;
+	}
+	
+	public MainScreenController getMainScreenController() {
+		return mainScreenController;
 	}
 
 
