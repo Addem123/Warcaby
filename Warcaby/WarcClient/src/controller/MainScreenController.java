@@ -174,9 +174,7 @@ public class MainScreenController implements Runnable {
 	 * @return wspolrzedna bedaca po³ozeniem pionka na planszy
 	 */
 	private int toBoard(double pixel) {
-		System.out.println(pixel);
 		int a = (int) (pixel + Tile.getTileSize() / 2) / Tile.getTileSize();
-		System.out.println(a);
 		return a;
 	}
 
