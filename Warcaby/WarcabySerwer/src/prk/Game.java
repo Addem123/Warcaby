@@ -332,7 +332,7 @@ class Game {
 			if (x >= 2 && y >= 2) {
 				int xi = piece.getOldX();
 				int yi = piece.getOldY();
-				while (x >= 2 && y >= 2) {
+				while (xi >= 2 && yi >= 2) {
 					--xi;
 					--yi;
 					if (board[xi][yi] != null && (board[xi][yi].getType() == piece.getType()
