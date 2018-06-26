@@ -10,6 +10,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.file.Paths;
 import java.util.Scanner;
+
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -21,42 +24,16 @@ import javafx.beans.property.StringProperty;
  *
  */
 class Game {
-	private static final String dataFile = "src/Data/data.txt";
+
 
 	/**
 	 * Tworzenie nowej gry. Konstruktor wype³nia tablice obiektami klasy Piece
 	 * reprezentujacymi pionki do gry
 	 */
 	public Game() {
-		for (int y = 0; y < 8; y++) {
-			for (int x = 0; x < 8; x++) {
-				Piece piece = null;
-				if ((y + x) % 2 != 0 && y < 3)
-					piece = new Piece(PieceType.RED, x, y, false);
-				if ((y + x) % 2 != 0 && y > 4)
-					piece = new Piece(PieceType.WHITE, x, y, false);
-				board[x][y] = piece;
-			}
-		}
+		createContent();
 	}
-
-	public synchronized void saveData() throws IOException {
-		PrintWriter out = null;
-		try {
-			File file = new File(dataFile);
-			if (file != null) {
-				out = new PrintWriter(new FileWriter(file.getPath(),true));
-				out.printf("%-10s %-10s %-10s %-10s %n", whitePlayer.get(), redPlayer.get(),
-						(won == true || tie == true) ? "Ended" : "notEnded",
-						won == true ? currentPlayer.getMark() == 'W'?whitePlayer.get():redPlayer.get() : "---");
-			}
-		} catch (FileNotFoundException e) {
-		} finally {
-			if (out != null)
-				out.close();
-		}
-	}
-
+	
 	/**
 	 * Obecny gracz
 	 */
@@ -71,7 +48,12 @@ class Game {
 	 * Zmienne mowiace czy gra zakoñczy³a sie zwycieñstwen jednego z graczy czy
 	 * remisem
 	 */
-	boolean won = false, tie = false;
+	boolean won = false, tie = false,accepted=false,playAgain=false;
+	
+	/**
+	 * Zmienna wzkorzystzwana do ustalenia czy gracze chca zagrac jeszcze raz
+	 */
+	IntegerProperty response= new SimpleIntegerProperty(0);
 
 	/**
 	 * ilosc ruchów damka. Zmienna wykorzystywana do ustalenia czy gra zakonczy sie
@@ -87,7 +69,22 @@ class Game {
 	 * Nick gracza poruszajacego sie czerwonymi pionkami
 	 */
 	StringProperty whitePlayer = new SimpleStringProperty("puste");
-
+    
+	/**
+	 * Metoda wypelniajaca tablice board obiektani typu Piece
+	 */
+	public void createContent(){
+    	for (int y = 0; y < 8; y++) {
+			for (int x = 0; x < 8; x++) {
+				Piece piece = null;
+				if ((y + x) % 2 != 0 && y < 3)
+					piece = new Piece(PieceType.RED, x, y, false);
+				if ((y + x) % 2 != 0 && y > 4)
+					piece = new Piece(PieceType.WHITE, x, y, false);
+				board[x][y] = piece;
+			}
+		}
+     }
 	/**
 	 * Metoda sprawdzajaca czy obecny gracz nie wygra³ starcia lub go nie zremisowa³
 	 * jesli tak ustawia zmienne won lub tie na true
@@ -143,11 +140,12 @@ class Game {
 			}
 			if (((yourPiece > 0 && oppPiece == 0) || (yourMove > 0 && oppMove == 0))) {
 				won = true;
-				saveData();
+				IOFile.saveData(won,tie,whitePlayer.get(),redPlayer.get(),currentPlayer.getMark());
 			}
 			if (queenMove >= 15) {
 				tie = true;
-				saveData();
+				IOFile.saveData(won,tie,whitePlayer.get(),redPlayer.get(),currentPlayer.getMark());
+				queenMove=0;
 			}
 		}
 	}
@@ -252,12 +250,14 @@ class Game {
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
 				if (board[x][y] != null && board[x][y].getType() == type) {
-					if (pieceStrike(board[x][y]))
+					if (pieceStrike(board[x][y])) {
 						count++;
+						break;
+					}
+						
 				}
 			}
 		}
-		// System.out.println("Bic w liczbie: "+count);
 		return count;
 	}
 
@@ -294,7 +294,7 @@ class Game {
 	 *            -obiekt klasy Piece dla ktorego sprawdzamy czy nalezy mu zmienic
 	 *            pole isQueen
 	 */
-	public synchronized void changeType(Piece piece) {
+	public synchronized void changeToQueen(Piece piece) {
 		if ((piece.getOldY() == 7 && piece.getType() == PieceType.RED && !piece.isQueen())
 				|| (piece.getOldY() == 0 && piece.getType() == PieceType.WHITE && !piece.isQueen())) {
 			piece.setQueen(true);
@@ -333,8 +333,7 @@ class Game {
 				int xi = piece.getOldX();
 				int yi = piece.getOldY();
 				while (xi >= 2 && yi >= 2) {
-					--xi;
-					--yi;
+					xi--;yi--;
 					if (board[xi][yi] != null && (board[xi][yi].getType() == piece.getType()
 							|| (board[xi][yi].getType() != piece.getType() && board[xi - 1][yi - 1] != null)))
 						break;
@@ -349,8 +348,7 @@ class Game {
 				int xi = piece.getOldX();
 				int yi = piece.getOldY();
 				while (xi <= 5 && yi >= 2) {
-					xi++;
-					yi--;
+					xi++;yi--;
 					if (board[xi][yi] != null && (board[xi][yi].getType() == piece.getType()
 							|| (board[xi][yi].getType() != piece.getType() && board[xi + 1][yi - 1] != null)))
 						break;
@@ -364,8 +362,7 @@ class Game {
 				int xi = piece.getOldX();
 				int yi = piece.getOldY();
 				while (xi >= 2 && yi <= 5) {
-					xi--;
-					yi++;
+					xi--;yi++;
 					if (board[xi][yi] != null && (board[xi][yi].getType() == piece.getType()
 							|| (board[xi][yi].getType() != piece.getType() && board[xi - 1][yi + 1] != null)))
 						break;
@@ -379,8 +376,7 @@ class Game {
 				int xi = piece.getOldX();
 				int yi = piece.getOldY();
 				while (xi <=5 && yi <=5) {
-					xi++;
-					yi++;
+					xi++;yi++;
 					if (board[xi][yi] != null && (board[xi][yi].getType() == piece.getType()
 							|| (board[xi][yi].getType() != piece.getType() && board[xi + 1][yi + 1] != null)))
 						break;
@@ -404,66 +400,69 @@ class Game {
 	 */
 	class Player extends Thread {
 		char mark;
-
 		public char getMark() {
 			return mark;
 		}
-
-		PieceType type;
-		Player opponent;
-		Socket socket;
-		BufferedReader input;
-		PrintWriter output;
+		private PieceType type;
+		private Player opponent;
+		private Socket socket;
+		private BufferedReader input;
+		private PrintWriter output;
 
 		/**
 		 * Konstruuje w¹tek obs³ugi dla danego gniazda, znak oraz typ dodaje listenery
-		 * do pól okreslajacego nicki graczy inicjuje pola strumieniowe i wysy³a
-		 * wiadomosci powitalne
+		 * do pól okreslajacego nicki graczy inicjuje pola strumieniowe, wysy³a
+		 * wiadomosci powitalne i wrazie zgody obu graczy na dalsza gre zmienia kolory pionków
 		 */
 		public Player(Socket socket, char mark, PieceType type) {
 			this.socket = socket;
 			this.mark = mark;
 			this.type = type;
 			redPlayer.addListener((obs, ov, nv) -> {
-				if (mark == 'W')
+				if (mark == 'W') {
 					output.println("OPPONNENTNICK" + nv);
+				}
 			});
 			whitePlayer.addListener((obs, ov, nv) -> {
-				if (mark == 'R')
+				if (mark == 'R') {
 					output.println("OPPONNENTNICK" + nv);
+				}
+			});
+			response.addListener((obs, ov, nv) -> {
+				if (nv.intValue()==2&&playAgain==true) {
+					output.println("YES");
+					createContent();
+					won=false;tie=false;
+					if(this.mark=='R') {
+						this.mark='W';
+						currentPlayer=this;
+					}
+					else {
+						this.mark='R';
+					}
+					if(this.type==PieceType.WHITE) {
+						this.type=PieceType.RED;
+					}
+						
+					else {
+						this.type=PieceType.WHITE;
+					}
+				}	
+				else if (nv.intValue()==2&&playAgain==false) {
+					output.println("NO");
+				}	
 			});
 			try {
 				input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				output = new PrintWriter(socket.getOutputStream(), true);
 				output.println("WELCOME " + mark);
 				output.println("MESSAGE Waiting for opponent to connect");
-				loadData();
+				IOFile.loadData(output);
 			} catch (IOException e) {
 				System.out.println("Player died: " + e);
 			}
 		}
 
-		public void loadData() {
-			File file = new File(dataFile);
-			if (file != null) {
-				Scanner in = null;
-				String whitePlayer, redPlayer, gameStatus, winner;
-				try {
-					in = new Scanner(Paths.get(file.getPath()));
-					while (in.hasNext()) {
-						whitePlayer = in.next();
-						redPlayer = in.next();
-						gameStatus = in.next();
-						winner = in.next();
-						output.println("DATA" + whitePlayer + "," + redPlayer + "," + gameStatus + "," + winner);
-					}
-				} catch (IOException e) {
-				} finally {
-					if (in != null)
-						in.close();
-				}
-			}
-		}
 
 		/**
 		 * Akceptuje powiadomienie o tym, kto jest przeciwnikiem.
@@ -479,6 +478,7 @@ class Game {
 		public void otherPlayerMoved() {
 			output.println("OPPONENT_MOVED " + gameStatus());
 			output.println(won ? "DEFEAT" : tie ? "TIE" : "");
+			output.println(won ? "PLAYAGAIN" : tie ? "PLAYAGAIN" : "");
 		}
 
 		/**
@@ -489,6 +489,7 @@ class Game {
 				// W¹tek jest uruchamiany dopiero po tym, jak dwaj gracze sie po³¹cza siê
 				// po³¹cz¹.
 				output.println("MESSAGE All players connected");
+				accepted=true;
 				// Powiedz pierwszemu graczowi, ¿e nadszed³ jej ruch.
 				if (mark == 'W') {
 					output.println("MSG Your move");
@@ -497,7 +498,7 @@ class Game {
 					output.println("MSG Opponen move");
 				}
 				// Wielokrotnie otrzymuj polecenia od klienta i przetwarzaj je.
-				while (true) {
+				while (accepted) {
 					String command = input.readLine();
 					// Jesli wiadomosc zaczyna sie od MOVE sprawdz jakiego typu to by³ ruch:
 					// -jesli ruch jest typu NONE- wiadodosc go gracza INVALIDMOVE
@@ -520,7 +521,7 @@ class Game {
 							board[oldX][oldY] = null;
 							Piece newPiece = new Piece(piece.getType(), newX, newY, piece.isQueen());
 							board[newX][newY] = newPiece;
-							changeType(newPiece);
+							changeToQueen(newPiece);
 							if (piece.isQueen()) {
 								queenMove++;
 							} else
@@ -528,6 +529,7 @@ class Game {
 							checkWon();
 							output.println("VALID_MOVE" + gameStatus());
 							output.println(won ? "VICTORY" : tie ? "TIE" : "");
+							output.println(won ? "PLAYAGAIN" : tie ? "PLAYAGAIN" : "");
 							currentPlayer = currentPlayer.opponent;
 							currentPlayer.otherPlayerMoved();
 						} else if (tryMove(oldX, oldY, newX, newY).getType() == MoveType.KILL) {
@@ -538,13 +540,13 @@ class Game {
 							board[oldX][oldY] = null;
 							Piece otherPiece = result.getPiece();
 							board[otherPiece.getOldX()][otherPiece.getOldY()] = null;
-							changeType(newPiece);
+							changeToQueen(newPiece);
 							queenMove = 0;
-							// System.out.println(pieceStrike(newPiece)+"=========================");
 							if (!pieceStrike(newPiece)) {
 								checkWon();
 								output.println("VALID_MOVE" + gameStatus());
 								output.println(won ? "VICTORY" : tie ? "TIE" : "");
+								output.println(won ? "PLAYAGAIN" : tie ? "PLAYAGAIN" : "");
 								currentPlayer = currentPlayer.opponent;
 								currentPlayer.otherPlayerMoved();
 							} else if (pieceStrike(newPiece)) {
@@ -559,9 +561,26 @@ class Game {
 					else if (command.startsWith("NICKR")) {
 						redPlayer.set(command.replace("NICKR", ""));
 					} else if (command.startsWith("DATA")) {
-						loadData();
-					} else if (command.startsWith("QUIT")) {
-						return;
+						IOFile.loadData(output);
+					}
+					//ustawianie zmiennych do sprawdzenia czy uzytkownicy chca grac jeszcze raz
+					else if (command.startsWith("PLAYAGAIN")) {
+						if(response.get()==2) {
+							response.set(0);
+						}
+							
+						if(command.substring(9).equals("YES")) {
+							if(response.get()==0||(response.get()==1&&playAgain==true)) {
+							playAgain=true;
+							response.setValue(response.get()+1);
+							}
+							else response.setValue(response.get()+1);
+						}
+						else {
+							playAgain=false;
+							response.setValue(response.get()+1);
+						}
+						
 					}
 				}
 			} catch (IOException e) {

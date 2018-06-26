@@ -42,7 +42,11 @@ public class ControllerUser {
 	public void closeMainWindow() {
 		primaryStage.close();
 	}
-
+	@FXML
+	private void initialize() {
+		ipField.setText("localhost");
+		textFieldNick.setText("w"+(int)(Math.random()*100));
+	}
 
 	@FXML
 	public void graj() throws InterruptedException {
@@ -90,7 +94,7 @@ public class ControllerUser {
 	public String getLocaluser() {
 		return localuser;
 	}
-
+	
 	public void setLocaluser(String localuser) {
 		this.localuser = localuser;
 	}

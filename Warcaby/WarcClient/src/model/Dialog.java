@@ -4,6 +4,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Orientation;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ScrollBar;
 public class Dialog {
 	static String about="Gra jest rozgrywana na planszy 8x8 pól pokolorowanych na przemian na kolor jasny i ciemny.\r\n" + 
@@ -34,17 +35,31 @@ public class Dialog {
 			"\r\n" + 
 			"Aplikacja umozliwia przejrzenie swoich wszysktich odbytych gier a tak¿e tworzy ranking graczy."
 			+ "Za wygran¹ graczowi jest dopisywane 3 punkty a za remis 1  przegrana nie zmienia ilosci punktów. \r\n";
-	public static void infoDialog() {
-		Alert errorAlert= new Alert(Alert.AlertType.INFORMATION);
-		errorAlert.setTitle("ZASADY GRY");
-		errorAlert.setHeaderText("Warcaby rosyjskie");
-		errorAlert.setContentText(about);
-		errorAlert.setX(100);
-		errorAlert.setY(50);
-		errorAlert.getDialogPane().setMinSize(800, 400);
-		errorAlert.getDialogPane().setMaxSize(800, 400);
+	public static void rulesDialog() {
+		Alert rulesAlert= new Alert(Alert.AlertType.INFORMATION);
+		rulesAlert.setTitle("ZASADY GRY");
+		rulesAlert.setHeaderText("Warcaby rosyjskie");
+		rulesAlert.setContentText(about);
+		rulesAlert.setX(50);
+		rulesAlert.setY(50);
+		rulesAlert.getDialogPane().setMinSize(800, 400);
+		rulesAlert.getDialogPane().setMaxSize(800, 400);
 		
-		//errorAlert.setResizable(true);
-		errorAlert.showAndWait();
+		//rulesAlert.setResizable(true);
+		rulesAlert.showAndWait();
+	}
+	public static ButtonType confirmDialog() {
+		Alert confirmAlert= new Alert(Alert.AlertType.CONFIRMATION);
+		confirmAlert.setTitle("/");
+		confirmAlert.setHeaderText("Warcaby rosyjskie");
+		confirmAlert.setContentText("Czy chcesz zagraæ jeszcze raz");
+		confirmAlert.getButtonTypes().clear();
+		confirmAlert.getButtonTypes().add(ButtonType.YES);
+		confirmAlert.getButtonTypes().add(ButtonType.NO);
+		//confirmAlert.setX(100);
+		//confirmAlert.setY(50);
+		confirmAlert.getDialogPane().setMinSize(200, 200);
+		confirmAlert.getDialogPane().setMaxSize(200, 200);
+		return confirmAlert.showAndWait().get();
 	}
 }

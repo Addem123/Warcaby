@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Optional;
 
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
@@ -17,6 +18,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -36,37 +38,29 @@ import model.Tile;
 /**
  * Klasa controlera glownago ekranu programu
  * 
- * @author £ukasz Makowski
+ * @author
  */
 public class MainScreenController implements Runnable {
 	private ObservableList<Data> results = FXCollections.observableArrayList();
-
 	public ObservableList<Data> getResults() {
 		return results;
 	}
-
 	private Stage primaryStage;
 	ControllerUser controllerUser;
 	private BufferedReader in;
-
 	private PrintWriter out;
 	private IntegerProperty port = new SimpleIntegerProperty(22222);
 	private Socket socket;
 	private Thread thread;
-
-	private boolean yourTurn = false;
-	private boolean accepted = false;
-
+	private boolean yourTurn = false,accepted = false;
 	private String ip;
 	private String waitingString = "Oczekiwanie na drugiego gracza";
 	private String wonString = "Wygra³eœ";
 	private String enemyWonString = "Przeciwnik wygra³";
 	private String tieString = "Gra zakoñczona remisem";
 	private char playerType;
-
 	private Tile[][] tileMatrix = new Tile[8][8];
-	Group tileGroup = new Group();
-	Group pieceGroup = new Group();
+	private Group tileGroup = new Group(),pieceGroup = new Group(); 
 	@FXML
 	private BorderPane borderPane;
 	@FXML
@@ -74,24 +68,12 @@ public class MainScreenController implements Runnable {
 	@FXML
 	private Pane gamePool;
 	@FXML
-	private Label myTurn;
+	private Label myTurn,myNick,oppTurn,enemyNick,LabelGamemssgs,labelEnemyNick;	
 	@FXML
-	private Label oppTurn;
-	@FXML
-	private Ellipse myElipse;
-	@FXML
-	private Ellipse oppElipse;
-	@FXML
-	private Label myNick;
-
+	private Ellipse myElipse,oppElipse;
 	public Label getMyNick() {
 		return myNick;
 	}
-
-	@FXML
-	private Label enemyNick;
-	@FXML
-	private Label LabelGamemssgs;
 	@FXML
 	private MenuItem myGames;
 
@@ -107,7 +89,6 @@ public class MainScreenController implements Runnable {
 		});
 		myNick.setText(controllerUser.getLocaluser());
 		myNick.setVisible(true);
-		
 	};
 
 	public enum Turn {
@@ -127,12 +108,20 @@ public class MainScreenController implements Runnable {
 			myTurn.setVisible(true);
 			oppElipse.setVisible(false);
 			oppTurn.setVisible(false);
+			myNick.setVisible(true);
+			enemyNick.setVisible(true);
+			labelEnemyNick.setVisible(true);
+			yourTurn=true;
 			break;
 		case OpponentTurn:
 			myElipse.setVisible(false);
 			myTurn.setVisible(false);
 			oppElipse.setVisible(true);
-			oppTurn.setVisible(true);
+			oppTurn.setVisible(true);		
+			myNick.setVisible(true);
+			enemyNick.setVisible(true);
+			labelEnemyNick.setVisible(true);
+			yourTurn=false;
 			break;
 		case None:
 			myElipse.setVisible(false);
@@ -140,6 +129,10 @@ public class MainScreenController implements Runnable {
 			oppElipse.setVisible(false);
 			oppTurn.setVisible(false);
 			myGames.setDisable(false);
+			myNick.setVisible(true);
+			enemyNick.setVisible(false);
+			labelEnemyNick.setVisible(false);
+			yourTurn=false;
 			break;
 		}
 	}
@@ -202,7 +195,6 @@ public class MainScreenController implements Runnable {
 			else
 				piece.abortMove();
 		});
-
 		return piece;
 	}
 
@@ -263,15 +255,14 @@ public class MainScreenController implements Runnable {
 			response = in.readLine();
 			if (response.startsWith("WELCOME")) {
 				playerType = response.charAt(8);
-				//connected = true;
 			} else if (response.startsWith("MESSAGE Waiting for opponent to connect")) {
+				displayTurn(Turn.None);
 				showMsg(waitingString);
 			} else if (response.startsWith("OPPONNENTNICK")) {
 				javafx.application.Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
 						enemyNick.setText(response.replace("OPPONNENTNICK", ""));
-						enemyNick.setVisible(true);
 					}
 				});
 			} else if (response.startsWith("MESSAGE All players connected")) {
@@ -284,24 +275,18 @@ public class MainScreenController implements Runnable {
 				accepted = true;
 				showMsg("Gramy!");
 			} else if (response.startsWith("MSG Your move")) {
-				yourTurn = true;
-				myElipse.setFill(Color.valueOf("#fff9f4"));
-				oppElipse.setFill(Color.valueOf("#c40003"));
+				setElipseColor();
 				displayTurn(Turn.MyTurn);
 			} else if (response.startsWith("MSG Opponen move")) {
-				myElipse.setFill(Color.valueOf("#c40003"));
-				oppElipse.setFill(Color.valueOf("#fff9f4"));
+				setElipseColor();
 				displayTurn(Turn.OpponentTurn);
-				yourTurn = false;
 			} else if (response.startsWith("MOREKILL")) {
 				showMove(response.substring(8));
 			} else if (response.startsWith("VALID_MOVE")) {
 				showMove(response.substring(10));
 				displayTurn(Turn.OpponentTurn);
-				yourTurn = false;
 			} else if (response.startsWith("OPPONENT_MOVED")) {
 				showMove(response.substring(15));
-				yourTurn = true;
 				displayTurn(Turn.MyTurn);
 			} else if (response.startsWith("VICTORY")) {
 				showMsg(wonString);
@@ -316,12 +301,42 @@ public class MainScreenController implements Runnable {
 				showMove(response.substring(12));
 			} else if (response.startsWith("DATA")) {
 				results.add(addToResults(response.substring(4)));
+			} else if (response.startsWith("PLAYAGAIN")) {
+				javafx.application.Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						playAgain();
+					}
+				});
+			} else if (response.startsWith("YES")) {
+				showMsg("Gramy jeszcze raz");
+				javafx.application.Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						nextPlay();
+					}
+				});
+			} else if (response.startsWith("NO")) {
+				showMsg("Dziekuje za gre");
+				displayTurn(Turn.None);
+				javafx.application.Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						pieceGroup.getChildren().clear();
+					}
+				});
+				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * Metoda wzpeniajca liste z wynikami gier
+	 * @param s- rekord z danymi z serwera o jednej grze
+	 * @return metoda zwraca obiekt typu Data
+	 */
 	public Data addToResults(String s) {
 		int i = 0, j = 0;
 		String whitePlayer = null, redPlayer = null, gameStatus = null, winner = null;
@@ -393,7 +408,6 @@ public class MainScreenController implements Runnable {
 		createContent();
 		gamePool.getChildren().addAll(tileGroup, pieceGroup);
 		displayTurn(Turn.None);
-		
 	}
 
 	/**
@@ -443,17 +457,18 @@ public class MainScreenController implements Runnable {
 	 */
 	@FXML
 	void about() {
-		Dialog.infoDialog();
+		Dialog.rulesDialog();
 	}
-    
+
 	/**
-	 * Metoda otwieraj¹ca okno z mozliwoscia obejrzenia rankingu oraz gier uzytkownika
+	 * Metoda otwieraj¹ca okno z mozliwoscia obejrzenia rankingu oraz gier
+	 * uzytkownika
 	 */
 	@FXML
 	void openMyGames() {
-		if(accepted) {
-		results.clear();
-		out.println("DATA");
+		if (accepted) {
+			results.clear();
+			out.println("DATA");
 		}
 		try {
 			FXMLLoader loader = new FXMLLoader(Main.class.getResource("/view/MyGames.fxml"));
@@ -486,13 +501,57 @@ public class MainScreenController implements Runnable {
 
 		}
 	}
-	
+
 	public void setIn(BufferedReader in) {
 		this.in = in;
 	}
-	
+
 	public char getPlayerType() {
 		return playerType;
+	}
+
+	/**
+	 * Metoda otwieraj¹ca okno z zapytaniem czy chcemy grac dalej
+	 */
+	public void playAgain() {
+		ButtonType result = Dialog.confirmDialog();
+		if (result == ButtonType.YES)
+			out.println("PLAYAGAINYES");
+		else if (result == ButtonType.NO)
+			out.println("PLAYAGAINNO");
+	}
+
+	/**
+	 * Metoda ustawiajaca plansze i pola gracz do kolejnej gry
+	 */
+	public void nextPlay() {
+		tileGroup.getChildren().clear();
+		pieceGroup.getChildren().clear();
+		createContent();
+		if (playerType == 'W') {
+			playerType = 'R';
+			setElipseColor();
+			displayTurn(Turn.OpponentTurn);
+			return;
+		} else {
+			playerType = 'W';
+			setElipseColor();
+			displayTurn(Turn.MyTurn);
+			return;
+		}
+	}
+
+	/**
+	 * Metoda do ustawiania koloru elipsy taki sam jak kolor pionka danego gracza
+	 */
+	public void setElipseColor() {
+		if (playerType == 'W') {
+			myElipse.setFill(Color.valueOf("#fff9f4"));
+			oppElipse.setFill(Color.valueOf("#c40003"));
+		} else {
+			myElipse.setFill(Color.valueOf("#c40003"));
+			oppElipse.setFill(Color.valueOf("#fff9f4"));
+		}
 	}
 
 }

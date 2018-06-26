@@ -23,7 +23,6 @@ public class GameScreenController {
 	}
 
 	private Stage myGameStage;
-
 	public void setMyGameStage(Stage myGameStage) {
 		this.myGameStage = myGameStage;
 	}
@@ -70,6 +69,8 @@ public class GameScreenController {
 	void showRanking() {
 		gamesList.clear();
 		makeRanking();
+		if(gamesList.size()==0)
+			 resultsTable.setPlaceholder(new Label("Aktualnie nie ma danych w bazie"));
 		resultsTable.setItems(gamesList);
 		redPlayer.setVisible(false);
 		gameStatus.setVisible(false);

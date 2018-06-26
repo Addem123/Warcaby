@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.junit.*;
+import org.junit.jupiter.api.Test;
 import org.junit.runners.MethodSorters;
 
 import controller.*;

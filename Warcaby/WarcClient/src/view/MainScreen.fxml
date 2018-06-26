@@ -80,7 +80,7 @@
          <children>
             <VBox alignment="CENTER" spacing="10.0">
                <children>
-                  <Label text="Enemy Nick">
+                  <Label fx:id="labelEnemyNick" text="Enemy Nick">
                      <font>
                         <Font name="System Bold" size="15.0" />
                      </font>
